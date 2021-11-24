@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="App1.Views.Surgeries" BackgroundColor="White">
+  <ListView x:Name="MyListView"
+            ItemsSource="{Binding Items}"
+            ItemTapped="Handle_ItemTapped"
+            CachingStrategy="RecycleElement">
+    <!--Built in Cells-->
+    <!--<ListView.ItemTemplate>
+        <DataTemplate>
+            <TextCell Text="{Binding Procedure}" />
+            <TextCell Text="{Binding Lines}" />
+            <TextCell Text="{Binding Duration}" />
+            <TextCell Text="{Binding Surgeon.LastName}" />
+        </DataTemplate>
+    </ListView.ItemTemplate>-->
+    
+    <!--Custom View Cells-->
+    
+    <ListView.ItemTemplate>
+      <DataTemplate>
+        <ViewCell>
+           <StackLayout Orientation="Horizontal">
+            <Label Text="{Binding Procedure.Name}" Style="{DynamicResource ListItemTextStyle}" />
+            <Label Text="{Binding Lines}" Style="{DynamicResource ListItemDetailTextStyle}" TextColor="Blue" />
+            <Label Text="{Binding Duration}" HorizontalTextAlignment="End" Style="{DynamicResource ListItemDetailTextStyle}" TextColor="Red"/>
+            <!--<Label Text="{Binding Surgeon.LastName}" Style="{DynamicResource ListItemDetailTextStyle}"/>-->
+          </StackLayout>
+        </ViewCell>
+      </DataTemplate>
+    </ListView.ItemTemplate>
+    
+  </ListView>
+</ContentPage>
