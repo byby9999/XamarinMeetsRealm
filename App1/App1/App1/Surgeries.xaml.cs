@@ -16,7 +16,6 @@ namespace App1.Views
     public partial class Surgeries : ContentPage
     {
         private const string appId = "detailedsurgeries-adgny";
-        private const string apiKey = "WrRHOfsxg2thPxl10grpDOGAtdL38tIlgVEwItGmKmMtvUozFXHUDKHgXtX1NYkz";
         public static Realms.Sync.App RealmApp;
         public static Realm surgeryRealm;
 
