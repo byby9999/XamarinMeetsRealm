@@ -1,7 +1,7 @@
 # XamarinMeetsRealm
-Demo app on how to use Realm sync feature from MongoDB Atlas, with Xamarin.Forms mobile apps
+Demo app on how to use Realm sync feature from MongoDB Atlas, using Xamarin.Forms mobile apps
 
 Steps:
-- Run app
-- Bottom navigation -> tap link in the middle, to navigate to 'Surg'
-- See results - entities read from a Sync context offered by Realm
+- Set as startup project the Android app, then run it
+- On Bottom navigation bar, tap the link in the middle with "Surgeries" to see demo data
+- Play along with the CRUD operations - entities are read from a Sync context offered by Realm
