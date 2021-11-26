@@ -1,10 +1,10 @@
 ﻿using App1.Models;
+using MongoDB.Bson;
 using Realms;
 using Realms.Sync;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -16,45 +16,51 @@ namespace App1.Views
     public partial class Surgeries : ContentPage
     {
         private const string appId = "detailedsurgeries-adgny";
+        private const string apiKey = "WrRHOfsxg2thPxl10grpDOGAtdL38tIlgVEwItGmKmMtvUozFXHUDKHgXtX1NYkz";
         public static Realms.Sync.App RealmApp;
+        public static Realm surgeryRealm;
 
         public ObservableCollection<SurgeryWithDetail> Items { get; set; }
         public static Random random = new Random();
+        public static string CurrentClient;
+        public static string[] AllClients = new string[] { "client=1", "client=2" };
 
         public Surgeries()
         {
             InitializeComponent();
+            CurrentClient = AllClients[random.Next(1, 101) % AllClients.Length];
             Items = new ObservableCollection<SurgeryWithDetail>();
+            MyListView.ItemsSource = Items;
             RealmApp = Realms.Sync.App.Create(appId);
-            _ = LoginToRealm();
         }
 
         protected override void OnAppearing()
         {
-            _ = PopulateItemsList(random.Next(1, 101));
+            _ = PopulateItemsList();
         }
 
-        private async AsyncTask PopulateItemsList(int random)
+        private async AsyncTask PopulateItemsList()
         {
-            string partition = random % 2 == 0 ?
-                "doc=1014870" :
-                "doc=11222";
+            if (RealmApp.CurrentUser == null)
+            {
+                var user = await RealmApp.LogInAsync(Credentials.Anonymous());
+            }
+            string partition = CurrentClient;
             try
             {
                 SyncConfiguration syncConfig = new SyncConfiguration(partition, RealmApp.CurrentUser);
-                var surgeryRealm = await Realm.GetInstanceAsync(syncConfig);
+                surgeryRealm = await Realm.GetInstanceAsync(syncConfig);
+
                 var surgeryList = surgeryRealm.All<SurgeryWithDetail>().ToList();
-                var first20 = surgeryList.Take(20);
-                var observableList = new ObservableCollection<SurgeryWithDetail>(first20.ToList());
-                //int many = _surgeries.Count();
-                ////To add an element into collection
-                //surgeryRealm.Write(() =>
-                //{
-                //    surgeryRealm.Add(new SurgeryWithDetail("doc=11222"));
-                //});
-                ////To read all elements in collection
-                //var allSurgs = surgeryRealm.All<SurgeryWithDetail>();
-                MyListView.ItemsSource = observableList;
+
+                var simpleList = surgeryRealm.All<Surgery>().ToList();
+
+                var first10 = surgeryList.OrderBy(s => s.Surgeon.LastName).Take(10);
+                var observableList = new ObservableCollection<SurgeryWithDetail>(first10.ToList());
+
+                Items = observableList;
+                MyListView.ItemsSource = Items;
+                MyTitle.Text = partition;
             }
             catch (Exception ex)
             {
@@ -62,28 +68,70 @@ namespace App1.Views
             }
         }
 
-        async void Handle_ItemTapped(object sender, ItemTappedEventArgs e)
+        private void removeButton_Clicked(object sender, EventArgs e)
         {
-            if (e.Item == null)
-                return;
+            var button = (Button)sender;
+            var entityId = button.CommandParameter.ToString();
+            var objectId = new ObjectId(entityId);
 
-            await DisplayAlert("Item Tapped", "An item was tapped.", "OK");
+            var entityToRemove = Items.FirstOrDefault(i => i.Id.HasValue && i.Id.Equals(objectId));
+            if (entityToRemove != null)
+            {
+                Items.Remove(entityToRemove);
+                MyListView.ItemsSource = Items;
 
-            //Deselect Item
-            ((ListView)sender).SelectedItem = null;
+                var toRemove = surgeryRealm.Find<SurgeryWithDetail>(objectId);
+
+                if (toRemove != null)
+                {
+                    surgeryRealm.Write(() =>
+                    {
+                        surgeryRealm.Remove(toRemove);
+                    });
+                }
+            }
+        }
+        private async void editButton_Clicked(object sender, EventArgs e)
+        {
+            var button = (Button)sender;
+            var entityId = button.CommandParameter.ToString();
+            var objectId = new ObjectId(entityId);
+
+            string newName = await DisplayPromptAsync("Edit Surgery", "Choose a new Procedure Name for the surgery");
+
+            var toUpdate = surgeryRealm.Find<SurgeryWithDetail>(objectId);
+            if (toUpdate != null)
+            {
+                surgeryRealm.Write(() =>
+                {
+                    toUpdate.Procedure.Name = newName;
+
+                    var listViewItem = Items.FirstOrDefault(i => i.Id.Equals(objectId));
+                    if (listViewItem != null)
+                    {
+                        listViewItem.Procedure.Name = newName;
+                        MyListView.ItemsSource = Items;
+                    }
+                });
+
+            }
+        }
+        private async void addButton_Clicked(object sender, EventArgs e)
+        {
+            string name = await DisplayPromptAsync("New Surgery Details", "Enter procedure name here", initialValue: " - Test Surgery - Alex");
+            var newSurgery = new SurgeryWithDetail(name, CurrentClient);
+
+            surgeryRealm.Write(() =>
+            {
+                surgeryRealm.Add(newSurgery);
+            });
+            await PopulateItemsList();
         }
 
-        private async static AsyncTask LoginToRealm()
+        protected override async void OnDisappearing()
         {
-            try
-            {
-                var user = await Task.WhenAll(RealmApp.LogInAsync(Credentials.Anonymous()));
-            }
-            catch (Exception e)
-            {
-                string message = e.Message;
-                var user = await Task.WhenAll(RealmApp.LogInAsync(Credentials.Anonymous()));
-            }
+            await RealmApp.CurrentUser.LogOutAsync();
         }
+
     }
 }
