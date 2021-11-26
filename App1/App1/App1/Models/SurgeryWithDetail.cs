@@ -8,6 +8,10 @@ namespace App1.Models
 
     public class SurgeryWithDetail : RealmObject
     {
+        public SurgeryWithDetail()
+        {
+
+        }
         public SurgeryWithDetail(string name, string partitionValue)
         {
             Procedure = new Procedure { Code = "TEST123", Name = name };

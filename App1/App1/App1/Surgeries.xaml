@@ -12,13 +12,12 @@
                 <DataTemplate>
                     <ViewCell>
                         <StackLayout Orientation="Horizontal">
+                            <Label Text="{Binding Procedure.Name}" WidthRequest="300" Style="{DynamicResource ListItemTextStyle}" />
+                            <Label Text="{Binding SurgeonFullName}"  WidthRequest="100" TextColor="Blue"></Label>
                             <Button x:Name="updateButton" Text="e" BackgroundColor="DarkOrange" TextColor="White" 
                                     CommandParameter="{Binding Id}" Clicked="editButton_Clicked" WidthRequest="40"/>
                             <Button x:Name="removeButton" Text="x" BackgroundColor="Red" TextColor="White" 
                                     CommandParameter="{Binding Id}" Clicked="removeButton_Clicked" WidthRequest="40"/>
-                            <Label Text="{Binding Procedure.Name}" Style="{DynamicResource ListItemTextStyle}" />
-                            <Label Text="{Binding SurgeonFullName}" TextColor="Blue"></Label>
-                            
                         </StackLayout>
                     </ViewCell>
                 </DataTemplate>

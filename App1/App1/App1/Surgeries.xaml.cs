@@ -97,11 +97,14 @@ namespace App1.Views
             var entityId = button.CommandParameter.ToString();
             var objectId = new ObjectId(entityId);
 
-            string newName = await DisplayPromptAsync("Edit Surgery", "Choose a new Procedure Name for the surgery");
+
 
             var toUpdate = surgeryRealm.Find<SurgeryWithDetail>(objectId);
             if (toUpdate != null)
             {
+                string newName = await DisplayPromptAsync("Edit Surgery",
+                    "Choose a new Procedure Name for the surgery",
+                    initialValue: toUpdate.Procedure.Name);
                 surgeryRealm.Write(() =>
                 {
                     toUpdate.Procedure.Name = newName;
@@ -118,7 +121,7 @@ namespace App1.Views
         }
         private async void addButton_Clicked(object sender, EventArgs e)
         {
-            string name = await DisplayPromptAsync("New Surgery Details", "Enter procedure name here", initialValue: " - Test Surgery - Alex");
+            string name = await DisplayPromptAsync("New Surgery Details", "Enter procedure name here", initialValue: "Test Surgery - Alex");
             var newSurgery = new SurgeryWithDetail(name, CurrentClient);
 
             surgeryRealm.Write(() =>
