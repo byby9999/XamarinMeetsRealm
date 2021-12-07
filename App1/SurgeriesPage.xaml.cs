@@ -22,7 +22,7 @@ namespace App1.Views
         private const string appId = "detailedsurgeries-adgny";
         public static Realms.Sync.App RealmApp;
         public static Realm Realm;
-        public static string CurrentClient = "";
+        public static string CurrentClient = string.Empty;
 
         public ObservableCollection<SurgeryWithDetail> Items { get; set; }
 
@@ -46,7 +46,7 @@ namespace App1.Views
         protected override async void OnAppearing()
         {
             string userOption = await DisplayActionSheet(
-                "Login:", "Cancel", null, "client=1", "client=2", "client=3", "client=4");
+                "Login as:", "Cancel", null, "client=1", "client=2", "client=3", "client=4");
             
             if (userOption != CurrentClient)
             {
@@ -85,7 +85,7 @@ namespace App1.Views
             }
             catch (Exception ex)
             {
-                await DisplayAlert("ERROR", ex.Message, "OK");
+                await DisplayAlert("Error", ex.Message, "ok");
             }
         }
 
@@ -114,7 +114,6 @@ namespace App1.Views
                     {
                         Realm.Remove(toRemove);
                     }); 
-                    //await Realm.SyncSession.WaitForDownloadAsync();
                 }
             }
         }
@@ -148,7 +147,6 @@ namespace App1.Views
                         MyListView.ItemsSource = Items;
                     }
                 });
-                //await Realm.SyncSession.WaitForDownloadAsync();
             }
         }
         private async void addButton_Clicked(object sender, EventArgs e)
@@ -160,7 +158,6 @@ namespace App1.Views
             {
                 Realm.Add(newSurgery);
             });
-            //await Realm.SyncSession.WaitForDownloadAsync();
             await PopulateItemsList();
         }
 
@@ -170,7 +167,7 @@ namespace App1.Views
             Realm.Dispose();
             await RealmApp.CurrentUser.LogOutAsync();
 
-            CurrentClient = "";
+            CurrentClient = string.Empty;
             MyListView.ItemsSource = null;
         }
     }
