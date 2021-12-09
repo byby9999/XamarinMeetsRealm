@@ -15,6 +15,8 @@
                             <StackLayout Orientation="Horizontal">
                                 <Label Text="{Binding Procedure.Name, Mode=TwoWay}" WidthRequest="300" Style="{DynamicResource ListItemTextStyle}" />
                                 <Label Text="{Binding SurgeonFullName}"  WidthRequest="100" TextColor="Blue"></Label>
+                                <Label WidthRequest="20" Text="{Binding NewVersion}" TextColor="LimeGreen" FontSize="Small"></Label>
+                                <Label WidthRequest="20" Text="{Binding HasMessage}" TextColor="Gray" FontSize="Small" ></Label>
                                 <ImageButton x:Name="updateButton" BackgroundColor="Transparent" Source="edit.png" 
                                     CommandParameter="{Binding Id}" Clicked="editButton_Clicked" WidthRequest="40"/>
                                 <ImageButton x:Name="removeButton" BackgroundColor="Transparent" Source="delete.png"

@@ -32,6 +32,8 @@ namespace App1.Models
         [MapTo("_id")]
         public ObjectId? Id { get; set; }
         public BodySide BodySide { get; set; }
+        public Side Side { get; set; }
+
         public string Duration { get; set; }
         public int? Lines { get; set; }
         public Patient Patient { get; set; }
@@ -44,9 +46,23 @@ namespace App1.Models
         [MapTo("_partition")]
         public string Partition { get; set; }
 
+        [MapTo("message")]
+        public string Message { get; set; }
+
+        [MapTo("version")]
+        public int? Version { get; set; }
+
+        [MapTo("color")]
+        public string Color { get; set; }
 
         [Ignored]
         public string SurgeonFullName => Surgeon.LastName + " " + Surgeon.FirstName;
+
+        [Ignored]
+        public char HasMessage { get; set; }
+
+        [Ignored]
+        public string NewVersion { get; set; }
     }
 
     public class BodySide : EmbeddedObject
@@ -57,7 +73,13 @@ namespace App1.Models
         public string Description { get; set; }
     }
 
-
+    public class Side : EmbeddedObject
+    {
+        [MapTo("_id")]
+        public ObjectId? Id { get; set; }
+        public string Code { get; set; }
+        public string Description { get; set; }
+    }
     public class Patient : EmbeddedObject
     {
         public string PatientIdentificationNumber { get; set; }

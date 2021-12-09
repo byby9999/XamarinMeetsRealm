@@ -46,7 +46,7 @@ namespace App1.Views
         protected override async void OnAppearing()
         {
             string userOption = await DisplayActionSheet(
-                "Login as:", "Cancel", null, "client=1", "client=2", "client=3", "client=4");
+                "Login as:", "Cancel", null, "client=1", "client=2", "client=3", "client=4", "client=5");
             
             if (userOption != CurrentClient)
             {
@@ -78,6 +78,12 @@ namespace App1.Views
                 var first10 = surgeryList.OrderBy(s => s.Surgeon.LastName).Take(10);
                 var observableList = new ObservableCollection<SurgeryWithDetail>(first10.ToList());
 
+                foreach (var item in observableList)
+                {
+                    item.HasMessage = string.IsNullOrEmpty(item.Message) ? ' ' : 'M';
+
+                    item.NewVersion = (item.Version.HasValue && item.Version == 3) ? "v3" : "";
+                }
                 Items = observableList;
                 MyListView.ItemsSource = Items;
                 MyTitle.Text = CurrentClient;
@@ -146,6 +152,7 @@ namespace App1.Views
                         listViewItem.Procedure.Name = newName;
                         MyListView.ItemsSource = Items;
                     }
+                    
                 });
             }
         }
