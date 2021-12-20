@@ -28,7 +28,7 @@ namespace App1.ViewModels
             AddItemCommand = new Command(OnAddItem);
         }
 
-        async Task ExecuteLoadItemsCommand()
+        async System.Threading.Tasks.Task ExecuteLoadItemsCommand()
         {
             IsBusy = true;
 
