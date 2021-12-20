@@ -8,26 +8,6 @@ namespace App1.Models
 {
     public class SurgeryWithDetail : RealmObject
     {
-        public SurgeryWithDetail()
-        {
-
-        }
-        public SurgeryWithDetail(string name, string partitionValue)
-        {
-            Procedure = new Procedure { Code = "TEST123", Name = name };
-            BodySide = new BodySide { Code = "Left", Description = "Left side" };
-            Duration = "01:59:59";
-            Id = ObjectId.GenerateNewId();
-            Lines = 4;
-            Patient = new Patient { PatientIdentificationNumber = "0000" };
-            Reference = "XXXTEST";
-            TenantId = partitionValue;
-            Partition = partitionValue;
-            TheatreTotalCost = 23;
-            Theatre = new Theatre { Code = "X1", Description = "Test" };
-            Surgeon = new Surgeon { LastName = "Abraham", FirstName = "Alex", Code = "xxx.x/x-x_x", Title = "Mr" };
-        }
-
         [PrimaryKey]
         [MapTo("_id")]
         public ObjectId? Id { get; set; }
@@ -63,6 +43,26 @@ namespace App1.Models
 
         [Ignored]
         public string NewVersion { get; set; }
+
+        public SurgeryWithDetail()
+        {
+
+        }
+        public SurgeryWithDetail(string name, string partitionValue, string bodySideDesc)
+        {
+            Procedure = new Procedure { Code = "TEST123", Name = name };
+            BodySide = new BodySide { Code = "A", Description = bodySideDesc };
+            Duration = "01:59:59";
+            Id = ObjectId.GenerateNewId();
+            Lines = 4;
+            Patient = new Patient { PatientIdentificationNumber = "ASDF" };
+            Reference = "XXXTEST";
+            TenantId = partitionValue;
+            Partition = partitionValue;
+            TheatreTotalCost = 23;
+            Theatre = new Theatre { Code = "X1", Description = "Test" };
+            Surgeon = new Surgeon { LastName = "Abraham", FirstName = "Alex", Code = "xxx.x/x-x_x", Title = "Mr" };
+        }
     }
 
     public class BodySide : EmbeddedObject

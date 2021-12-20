@@ -26,6 +26,7 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+            <Label x:Name="TotalEntries" FontSize="Small" TextColor="Coral"></Label>
             <Button x:Name="addButton" Text="+ Surgery" BackgroundColor="#3DD49B" TextColor="White" Clicked="addButton_Clicked"></Button>
         </StackLayout>
     </ContentPage.Content>

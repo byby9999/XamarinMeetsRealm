@@ -23,6 +23,7 @@ namespace App1.Views
         public static Realms.Sync.App RealmApp;
         public static Realm Realm;
         public static string CurrentClient = string.Empty;
+        public static int TopX = 10;
 
         public ObservableCollection<SurgeryWithDetail> Items { get; set; }
 
@@ -51,6 +52,7 @@ namespace App1.Views
             if (userOption != CurrentClient)
             {
                 var user = await RealmApp.LogInAsync(Credentials.Anonymous());
+
                 CurrentClient = userOption;
                 SyncConfiguration syncConfig = new SyncConfiguration(CurrentClient, RealmApp.CurrentUser);
                 try
@@ -66,27 +68,77 @@ namespace App1.Views
                     await DisplayAlert("Error", e.Message, "ok");
                 }
             }
-            _ = PopulateItemsList();
+            _ = PopulateItemsList(CurrentClient);
         }
 
-        private async AsyncTask PopulateItemsList()
+        private async AsyncTask PopulateItemsList(string client)
         {
             try
             {
-                var surgeryList = Realm.All<SurgeryWithDetail>().ToList();
-
-                var first10 = surgeryList.OrderBy(s => s.Surgeon.LastName).Take(10);
-                var observableList = new ObservableCollection<SurgeryWithDetail>(first10.ToList());
-
-                foreach (var item in observableList)
+                if (client != "client=3")
                 {
-                    item.HasMessage = string.IsNullOrEmpty(item.Message) ? ' ' : 'M';
+                    MyTitle.Text = CurrentClient;
+                    var surgeryList = Realm.All<SurgeryWithDetail>().ToList();
+                    TotalEntries.Text = $"Showing {TopX} out of {surgeryList.Count} entries";
 
-                    item.NewVersion = (item.Version.HasValue && item.Version == 3) ? "v3" : "";
+                    var firstX = surgeryList.OrderBy(s => s.Surgeon.LastName).Take(TopX);
+                    var observableList = new ObservableCollection<SurgeryWithDetail>(firstX.ToList());
+
+                    foreach (var item in observableList)
+                    {
+                        item.HasMessage = string.IsNullOrEmpty(item.Message) ? ' ' : 'M';
+
+                        item.NewVersion = (item.Version.HasValue && item.Version == 3) ? "v3" : "";
+                    }
+                    Items = observableList;
+                    MyListView.ItemsSource = Items;
+                    
                 }
-                Items = observableList;
-                MyListView.ItemsSource = Items;
-                MyTitle.Text = CurrentClient;
+                else 
+                {
+                    MyTitle.Text = CurrentClient;
+                    var allSurgeriesV4 = Realm.All<SurgeryWithDetails_v4>().ToList();
+                    var allSurgeriesV1 = Realm.All<SurgeryWithDetail>().ToList();
+                    TotalEntries.Text = $"Showing {TopX} out of {allSurgeriesV4.Count} entries";
+                    var observableList = new ObservableCollection<SurgeryWithDetail>();
+
+                    var surgeryListV4 = allSurgeriesV4
+                        .OrderBy(s => s.Surgeon.LastName)
+                        .Take(TopX).ToList();
+
+                    var surgeryListV1 = allSurgeriesV1
+                        .OrderBy(s => s.Surgeon.LastName)
+                        .Take(TopX)
+                        .ToList();
+
+                    foreach(var item in surgeryListV1) 
+                    {
+                        observableList.Add(item);
+                    }
+                    foreach (var item in surgeryListV4)
+                    {
+                        observableList.Add(
+                            new SurgeryWithDetail
+                            {
+                                Id = item.Id,
+                                Procedure = new Procedure
+                                {
+                                    Name = item.Procedure.Name
+                                },
+                                Surgeon = new Surgeon
+                                {
+                                    FirstName = item.Surgeon.FirstName,
+                                    LastName = item.Surgeon.LastName,
+                                    Title = item.Surgeon.Title
+                                },
+                                NewVersion = "v4",
+                                HasMessage = ' ' 
+                            });
+                    }
+                    Items = observableList;
+                    MyListView.ItemsSource = Items;
+                    
+                }
 
             }
             catch (Exception ex)
@@ -128,7 +180,7 @@ namespace App1.Views
             var button = (ImageButton)sender;
             var entityId = button.CommandParameter.ToString();
             var objectId = new ObjectId(entityId);
-
+            
             var toUpdate = Realm.Find<SurgeryWithDetail>(objectId);
             if (toUpdate != null)
             {
@@ -158,14 +210,34 @@ namespace App1.Views
         }
         private async void addButton_Clicked(object sender, EventArgs e)
         {
-            string name = await DisplayPromptAsync("New Surgery Details", "Enter procedure name here", initialValue: "Test Surgery - Alex");
-            var newSurgery = new SurgeryWithDetail(name, CurrentClient);
+            Random r = new Random();
+            int randomPosition;
+            string alphabet = "abcdefghijklmnopqrstuvwxyz";
+            string randomName = "surgery-";
 
-            Realm.Write(() =>
+            for (int i = 0; i < 4; i++)
             {
-                Realm.Add(newSurgery);
-            });
-            await PopulateItemsList();
+                randomPosition = r.Next(0, 26);
+                var randomLetter = alphabet[randomPosition];
+                randomName += randomLetter;
+            }
+
+            string name = await DisplayPromptAsync("New Surgery Details", "Enter procedure name here", initialValue: randomName);
+
+            try
+            {
+                var newSurgery = new SurgeryWithDetail(name, CurrentClient, "ANDROID");
+
+                Realm.Write(() =>
+                {
+                    Realm.Add(newSurgery);
+                }); 
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Error", ex.Message, "ok");
+            }
+            await PopulateItemsList(CurrentClient);
         }
 
 
