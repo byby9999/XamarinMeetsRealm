@@ -19,19 +19,28 @@ namespace App1.Views
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class SurgeriesPage : ContentPage
     {
-        private const string appId = "detailedsurgeries-adgny";
+        private const string appId = "myapp-nktiq";
         public static Realms.Sync.App RealmApp;
         public static Realm Realm;
-        public static string CurrentClient = string.Empty;
+        public static string CurrentPartition = string.Empty;
         public static int TopX = 10;
 
-        public ObservableCollection<SurgeryWithDetail> Items { get; set; }
+        public static Dictionary<string, string> UserPartitionsMap = new Dictionary<string, string>()
+        {
+            { "client=1", "61c058e5559668e69ad62a8d" },
+            { "client=1 (v2)", "61c058e5559668e69ad62a8d" },
+            { "client=2", "61c066a7559668e69ad78346" },
+            { "client=3", "61c084f8f89724893240b892" },
+            { "client=4", "61c08508c0a82d01340e0458" }
+        };
+
+        public ObservableCollection<Surgery> Items { get; set; }
 
         public SurgeriesPage()
         {
             InitializeComponent();
             
-            Items = new ObservableCollection<SurgeryWithDetail>();
+            Items = new ObservableCollection<Surgery>();
             MyListView.ItemsSource = Items;
             try
             {
@@ -46,15 +55,19 @@ namespace App1.Views
 
         protected override async void OnAppearing()
         {
+            bool newVersion = false;
             string userOption = await DisplayActionSheet(
-                "Login as:", "Cancel", null, "client=1", "client=2", "client=3", "client=4", "client=5");
-            
-            if (userOption != CurrentClient)
-            {
-                var user = await RealmApp.LogInAsync(Credentials.Anonymous());
+                "Login as:", "Cancel", null, UserPartitionsMap.Keys.ElementAt(0), UserPartitionsMap.Keys.ElementAt(1), 
+                UserPartitionsMap.Keys.ElementAt(2), UserPartitionsMap.Keys.ElementAt(3), UserPartitionsMap.Keys.ElementAt(4));
 
-                CurrentClient = userOption;
-                SyncConfiguration syncConfig = new SyncConfiguration(CurrentClient, RealmApp.CurrentUser);
+            if (userOption != CurrentPartition)
+            {
+                var user = await RealmApp.LogInAsync(Credentials.EmailPassword("test12@example.com", "test12"));
+
+                MyTitle.Text = userOption;
+                CurrentPartition = UserPartitionsMap[userOption];
+                
+                SyncConfiguration syncConfig = new SyncConfiguration(CurrentPartition, RealmApp.CurrentUser);
                 try
                 {
                     Realm = await Realm.GetInstanceAsync(syncConfig);
@@ -68,83 +81,64 @@ namespace App1.Views
                     await DisplayAlert("Error", e.Message, "ok");
                 }
             }
-            _ = PopulateItemsList(CurrentClient);
+            if (userOption.Contains("(v2)"))
+                newVersion = true;
+            await PopulateItemsList(newVersion);
         }
 
-        private async AsyncTask PopulateItemsList(string client)
+        private async AsyncTask PopulateItemsList(bool newVersion = false)
         {
             try
             {
-                if (client != "client=3")
+                if (newVersion) 
                 {
-                    MyTitle.Text = CurrentClient;
-                    var surgeryList = Realm.All<SurgeryWithDetail>().ToList();
-                    TotalEntries.Text = $"Showing {TopX} out of {surgeryList.Count} entries";
+                    var surgeryListV2 = Realm.All<Surgery_v2>().ToList();
+                    TotalEntries.Text = $"Showing {TopX} out of {surgeryListV2.Count} entries";
 
-                    var firstX = surgeryList.OrderBy(s => s.Surgeon.LastName).Take(TopX);
-                    var observableList = new ObservableCollection<SurgeryWithDetail>(firstX.ToList());
-
-                    foreach (var item in observableList)
-                    {
-                        item.HasMessage = string.IsNullOrEmpty(item.Message) ? ' ' : 'M';
-
-                        item.NewVersion = (item.Version.HasValue && item.Version == 3) ? "v3" : "";
-                    }
-                    Items = observableList;
-                    MyListView.ItemsSource = Items;
+                    var firstXV2 = surgeryListV2.OrderBy(s => s.Surgeon.LastName).Take(TopX);
                     
+                    var displayModels = GetDisplayModels(firstXV2);
+
+                    Items = new ObservableCollection<Surgery>(displayModels.ToList());
+                    MyListView.ItemsSource = Items;
                 }
                 else 
                 {
-                    MyTitle.Text = CurrentClient;
-                    var allSurgeriesV4 = Realm.All<SurgeryWithDetails_v4>().ToList();
-                    var allSurgeriesV1 = Realm.All<SurgeryWithDetail>().ToList();
-                    TotalEntries.Text = $"Showing {TopX} out of {allSurgeriesV4.Count} entries";
-                    var observableList = new ObservableCollection<SurgeryWithDetail>();
+                    var surgeryList = Realm.All<Surgery>().ToList();
+                    TotalEntries.Text = $"Showing {TopX} out of {surgeryList.Count} entries";
 
-                    var surgeryListV4 = allSurgeriesV4
-                        .OrderBy(s => s.Surgeon.LastName)
-                        .Take(TopX).ToList();
+                    var firstX = surgeryList.OrderBy(s => s.Surgeon.LastName).Take(TopX);
+                    var observableList = new ObservableCollection<Surgery>(firstX.ToList());
 
-                    var surgeryListV1 = allSurgeriesV1
-                        .OrderBy(s => s.Surgeon.LastName)
-                        .Take(TopX)
-                        .ToList();
-
-                    foreach(var item in surgeryListV1) 
-                    {
-                        observableList.Add(item);
-                    }
-                    foreach (var item in surgeryListV4)
-                    {
-                        observableList.Add(
-                            new SurgeryWithDetail
-                            {
-                                Id = item.Id,
-                                Procedure = new Procedure
-                                {
-                                    Name = item.Procedure.Name
-                                },
-                                Surgeon = new Surgeon
-                                {
-                                    FirstName = item.Surgeon.FirstName,
-                                    LastName = item.Surgeon.LastName,
-                                    Title = item.Surgeon.Title
-                                },
-                                NewVersion = "v4",
-                                HasMessage = ' ' 
-                            });
-                    }
                     Items = observableList;
                     MyListView.ItemsSource = Items;
-                    
-                }
-
+                }  
             }
             catch (Exception ex)
             {
                 await DisplayAlert("Error", ex.Message, "ok");
             }
+        }
+
+        private List<Surgery> GetDisplayModels(IEnumerable<Surgery_v2> list)
+        {
+            return list.Select(x => 
+                new Surgery 
+                {
+                    Surgeon = new Surgery_Surgeon 
+                    { 
+                        FirstName =  x.Surgeon.FirstName, 
+                        LastName = x.Surgeon.LastName, 
+                        Title = x.Surgeon.Title, 
+                        Code = x.Surgeon.Code 
+                    },
+                    Procedure = new Surgery_Procedure 
+                    { 
+                        Code = x.Procedure.Code, 
+                        Name = x.Procedure.Name 
+                    },
+                    Extra = string.IsNullOrEmpty(x.Message) ? ' ' : 'M'
+                }).ToList();
         }
 
         private async void removeButton_Clicked(object sender, EventArgs e)
@@ -164,7 +158,7 @@ namespace App1.Views
                 Items.Remove(entityToRemove);
                 MyListView.ItemsSource = Items;
 
-                var toRemove = Realm.Find<SurgeryWithDetail>(objectId);
+                var toRemove = Realm.Find<Surgery>(objectId);
 
                 if (toRemove != null)
                 {
@@ -181,11 +175,11 @@ namespace App1.Views
             var entityId = button.CommandParameter.ToString();
             var objectId = new ObjectId(entityId);
             
-            var toUpdate = Realm.Find<SurgeryWithDetail>(objectId);
+            var toUpdate = Realm.Find<Surgery>(objectId);
             if (toUpdate != null)
             {
                 var procedure = toUpdate.Procedure;
-                var newProcedure = new Procedure() 
+                var newProcedure = new Surgery_Procedure() 
                 {
                     Code = procedure.Code
                 };
@@ -226,7 +220,7 @@ namespace App1.Views
 
             try
             {
-                var newSurgery = new SurgeryWithDetail(name, CurrentClient, "ANDROID");
+                var newSurgery = new Surgery(name, CurrentPartition, "ANDROID");
 
                 Realm.Write(() =>
                 {
@@ -237,7 +231,7 @@ namespace App1.Views
             {
                 await DisplayAlert("Error", ex.Message, "ok");
             }
-            await PopulateItemsList(CurrentClient);
+            await PopulateItemsList();
         }
 
 
@@ -246,7 +240,7 @@ namespace App1.Views
             Realm.Dispose();
             await RealmApp.CurrentUser.LogOutAsync();
 
-            CurrentClient = string.Empty;
+            CurrentPartition = string.Empty;
             MyListView.ItemsSource = null;
         }
     }
