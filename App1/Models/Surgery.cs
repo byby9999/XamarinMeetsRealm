@@ -56,13 +56,16 @@ namespace App1.Models
         [MapTo("_partition")]
         [Required]
         public string Partition { get; set; }
+        
+        [MapTo("v")]
+        public int? V { get; set; }
 
 
         [Ignored]
         public string SurgeonFullName => Surgeon.LastName + " " + Surgeon.FirstName;
 
         [Ignored]
-        public char Extra { get; set; }
+        public string Extra { get; set; }
 
         [Ignored]
         public string NewVersion { get; set; }

@@ -97,9 +97,9 @@ namespace App1.Views
 
                     var firstXV2 = surgeryListV2.OrderBy(s => s.Surgeon.LastName).Take(TopX);
                     
-                    var displayModels = GetDisplayModels(firstXV2);
+                    var displayModels = DisplayModels.GetFrom(firstXV2);
 
-                    Items = new ObservableCollection<Surgery>(displayModels.ToList());
+                    Items = new ObservableCollection<Surgery>(displayModels);
                     MyListView.ItemsSource = Items;
                 }
                 else 
@@ -108,7 +108,10 @@ namespace App1.Views
                     TotalEntries.Text = $"Showing {TopX} out of {surgeryList.Count} entries";
 
                     var firstX = surgeryList.OrderBy(s => s.Surgeon.LastName).Take(TopX);
-                    var observableList = new ObservableCollection<Surgery>(firstX.ToList());
+
+                    var displayModels = DisplayModels.GetFrom(firstX);
+
+                    var observableList = new ObservableCollection<Surgery>(displayModels);
 
                     Items = observableList;
                     MyListView.ItemsSource = Items;
@@ -120,26 +123,6 @@ namespace App1.Views
             }
         }
 
-        private List<Surgery> GetDisplayModels(IEnumerable<Surgery_v2> list)
-        {
-            return list.Select(x => 
-                new Surgery 
-                {
-                    Surgeon = new Surgery_Surgeon 
-                    { 
-                        FirstName =  x.Surgeon.FirstName, 
-                        LastName = x.Surgeon.LastName, 
-                        Title = x.Surgeon.Title, 
-                        Code = x.Surgeon.Code 
-                    },
-                    Procedure = new Surgery_Procedure 
-                    { 
-                        Code = x.Procedure.Code, 
-                        Name = x.Procedure.Name 
-                    },
-                    Extra = string.IsNullOrEmpty(x.Message) ? ' ' : 'M'
-                }).ToList();
-        }
 
         private async void removeButton_Clicked(object sender, EventArgs e)
         {
@@ -186,6 +169,10 @@ namespace App1.Views
                 string newName = await DisplayPromptAsync("Edit Surgery",
                     "Choose a new Procedure Name for the surgery",
                     initialValue: toUpdate.Procedure.Name);
+
+                if (newName == null)
+                    return;
+                
                 newProcedure.Name = newName;
 
                 Realm.Write(() =>
