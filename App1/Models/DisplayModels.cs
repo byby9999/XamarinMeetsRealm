@@ -12,6 +12,7 @@ namespace App1.Models
             return list.Select(x =>
                 new Surgery
                 {
+                    Id = x.Id,
                     Surgeon = new Surgery_Surgeon
                     {
                         FirstName = x.Surgeon.FirstName,
@@ -35,6 +36,7 @@ namespace App1.Models
             {
                 var displayItem = new Surgery
                 {
+                    Id = s.Id,
                     Surgeon = new Surgery_Surgeon
                     {
                         FirstName = s.Surgeon.FirstName,
@@ -48,7 +50,7 @@ namespace App1.Models
                         Name = s.Procedure.Name
                     }
                 };
-                displayItem.Extra = s.V.GetValueOrDefault().ToString();
+                displayItem.Extra = s.V.HasValue ? s.V.ToString() : " ";
 
                 result.Add(displayItem);
             }
