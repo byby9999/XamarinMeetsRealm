@@ -205,6 +205,9 @@ namespace App1.Views
 
             string name = await DisplayPromptAsync("New Surgery Details", "Enter procedure name here", initialValue: randomName);
 
+            if (name == null)
+                return;
+
             try
             {
                 var newSurgery = new Surgery(name, CurrentPartition, "ANDROID");
