@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="App1.Views.Partitions">
+    <ContentPage.Content>
+        <StackLayout>
+            <!-- Place new controls here -->
+            <Label x:Name="ChosenUser" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Title" TextColor="Red" />
+            <Label x:Name="ChosenProject" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Title" TextColor="Red" />
+
+            <Label Text="People:" FontSize="Medium" TextColor="LimeGreen"></Label>
+            <ListView x:Name="People" ItemsSource="{Binding PeopleItems}" CachingStrategy="RecycleElement">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <StackLayout Orientation="Horizontal">
+                                <Label Text="{Binding Name, Mode=TwoWay}" WidthRequest="300" TextColor="LimeGreen" />
+                            </StackLayout>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <Label Text="Preferences:" FontSize="Medium" TextColor="DarkBlue"></Label>
+            <ListView x:Name="Preferences" ItemsSource="{Binding PreferenceItems}" CachingStrategy="RecycleElement">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <StackLayout Orientation="Horizontal">
+                                <Label Text="{Binding Preference1}" TextColor="DarkBlue" />
+                                <Label Text="{Binding Preference2}" TextColor="DarkBlue" />
+                            </StackLayout>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <Label Text="Tasks:" FontSize="Medium" TextColor="DeepPink"></Label>
+            <ListView x:Name="Tasks" ItemsSource="{Binding TaskItems}" CachingStrategy="RecycleElement">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <StackLayout Orientation="Horizontal">
+                                <Label Text="{Binding Title, Mode=TwoWay}" WidthRequest="300" TextColor="DeepPink" />
+                               
+                            </StackLayout>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <Label Text="Reports:" FontSize="Medium" TextColor="Teal"></Label>
+            <ListView x:Name="Reports" ItemsSource="{Binding ReportItems}" CachingStrategy="RecycleElement">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <StackLayout Orientation="Horizontal">
+                                <Label Text="Money" TextColor="Teal"></Label>
+                                <Label Text="{Binding Money, Mode=TwoWay}" TextColor="Teal" />
+                                <Label Text="Time" TextColor="Teal"></Label>
+                                <Label Text="{Binding Time, Mode=TwoWay}" TextColor="Teal" />
+                            </StackLayout>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

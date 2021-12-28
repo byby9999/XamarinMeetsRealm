@@ -58,4 +58,19 @@ namespace App1.Models
             return result;
         }
     }
+
+
+    public class PreferenceDisplayModel 
+    {
+        public PreferenceDisplayModel(string bg, string font)
+        {
+            Preference1 = "Background color: ";
+            Preference1 += string.IsNullOrEmpty(bg) ? "-" : bg;
+
+            Preference2 = "Font Size: ";
+            Preference2 += string.IsNullOrEmpty(font) ? "-" : font;
+        }
+        public string Preference1 { get; set; }
+        public string Preference2 { get; set; }
+    }
 }
