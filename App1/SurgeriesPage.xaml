@@ -5,8 +5,9 @@
     <ContentPage.Content>
         <StackLayout>
             <!-- Place new controls here -->
-            <Label x:Name="MyTitle" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Title" TextColor="Black" />
-            <ListView x:Name="MyListView"
+            <Label x:Name="Title" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Title" TextColor="DeepPink" />
+            <Label x:Name="Subtitle" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Small" TextColor="CornflowerBlue" />
+            <ListView x:Name="MySurgeries"
             ItemsSource="{Binding Items}" 
             CachingStrategy="RecycleElement">
                 <ListView.ItemTemplate>

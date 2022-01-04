@@ -21,17 +21,23 @@ namespace App1.Views
     {
         private const string appId = "myapp-nktiq";
         public static Realms.Sync.App RealmApp;
-        public static Realm Realm;
-        public static string CurrentPartition = string.Empty;
+
+        private static Realm medicalRealm;
+        private static Realm projectRealm;
+        private static Realm personRealm;
+
+        public static string AppUserPartition = string.Empty;
+        public static string ProjectPartition = string.Empty;
+        public static string PersonPartition = string.Empty;
+
         public static int TopX = 10;
 
         public static Dictionary<string, string> UserPartitionsMap = new Dictionary<string, string>()
         {
-            { "client=1", "61c058e5559668e69ad62a8d" },
-            { "client=1 (v2)", "61c058e5559668e69ad62a8d" },
-            { "client=2", "61c066a7559668e69ad78346" },
-            { "client=3", "61c084f8f89724893240b892" },
-            { "client=4", "61c08508c0a82d01340e0458" }
+            { "test12@example.com", "61c058e5559668e69ad62a8d" },
+            { "test34@example.com", "61c066a7559668e69ad78346" },
+            { "test56@example.com", "61c084f8f89724893240b892" },
+            { "test78@example.com", "61c08508c0a82d01340e0458" }
         };
 
         public ObservableCollection<Surgery> Items { get; set; }
@@ -41,7 +47,7 @@ namespace App1.Views
             InitializeComponent();
             
             Items = new ObservableCollection<Surgery>();
-            MyListView.ItemsSource = Items;
+            MySurgeries.ItemsSource = Items;
             try
             {
                 if (RealmApp == null)
@@ -56,33 +62,57 @@ namespace App1.Views
         protected override async void OnAppearing()
         {
             bool newVersion = false;
-            string userOption = await DisplayActionSheet(
-                "Login as:", "Cancel", null, UserPartitionsMap.Keys.ElementAt(0), UserPartitionsMap.Keys.ElementAt(1), 
-                UserPartitionsMap.Keys.ElementAt(2), UserPartitionsMap.Keys.ElementAt(3), UserPartitionsMap.Keys.ElementAt(4));
 
-            if (userOption != CurrentPartition)
+            string emailChosen = await DisplayActionSheet("Login as:", "Cancel", null,
+                "test12@example.com", "test34@example.com", "test56@example.com", "test78@example.com");
+
+            string personOption = await DisplayActionSheet("Choose a person:", "Cancel", null,
+                "person=1", "person=2", "person=3");
+
+            string projectOption = await DisplayActionSheet("Choose a project:", "Cancel", null, 
+                "project=A", "project=B", "project=C");
+
+            if (personOption != PersonPartition || projectOption != ProjectPartition)
             {
-                var user = await RealmApp.LogInAsync(Credentials.EmailPassword("test12@example.com", "test12"));
+                //This method sets RealmApp.CurrentUser
+                var user = await RealmApp.LogInAsync(Credentials.EmailPassword(emailChosen, emailChosen.Split(new char[] { '@' })[0]));
 
-                MyTitle.Text = userOption;
-                CurrentPartition = UserPartitionsMap[userOption];
+                Title.Text = $"{emailChosen}";
+
+                AppUserPartition = RealmApp.CurrentUser.Id;
+                PersonPartition = personOption;
+                ProjectPartition = projectOption;
                 
-                SyncConfiguration syncConfig = new SyncConfiguration(CurrentPartition, RealmApp.CurrentUser);
+                SyncConfiguration syncConfigMedical = new SyncConfiguration(AppUserPartition, RealmApp.CurrentUser);
+                SyncConfiguration syncConfigProejct = new SyncConfiguration(ProjectPartition, RealmApp.CurrentUser);
+                SyncConfiguration syncConfigPeople = new SyncConfiguration(PersonPartition, RealmApp.CurrentUser);
                 try
                 {
-                    Realm = await Realm.GetInstanceAsync(syncConfig);
-                    if (Realm.SyncSession.State == SessionState.Inactive)
+                    medicalRealm = await Realm.GetInstanceAsync(syncConfigMedical);
+                    personRealm = await Realm.GetInstanceAsync(syncConfigPeople);
+                    projectRealm = await Realm.GetInstanceAsync(syncConfigProejct);
+
+                    if (medicalRealm.SyncSession.State == SessionState.Inactive)
                     {
-                        Realm.SyncSession.Start();
+                        medicalRealm.SyncSession.Start();
                     }
+
+                    var people = personRealm.All<Person>();
+                    var preferences = personRealm.All<Preference>();
+
+                    var tasks = projectRealm.All<Models.Task>();
+                    var report = projectRealm.All<Report>();
+
+                    Subtitle.Text = $"{personOption}: {people.Count()} people, {preferences.Count()} prefs. {projectOption}: {tasks.Count()} tasks, {report.Count()} reports";
+
                 }
                 catch (Exception e) 
                 {
                     await DisplayAlert("Error", e.Message, "ok");
                 }
             }
-            if (userOption.Contains("(v2)"))
-                newVersion = true;
+            //if (personOption.Contains("(v2)"))
+            //    newVersion = true;
             await PopulateItemsList(newVersion);
         }
 
@@ -92,7 +122,7 @@ namespace App1.Views
             {
                 if (newVersion) 
                 {
-                    var surgeryListV2 = Realm.All<Surgery_v2>().ToList();
+                    var surgeryListV2 = medicalRealm.All<Surgery_v2>().ToList();
                     TotalEntries.Text = $"Showing {TopX} out of {surgeryListV2.Count} entries";
 
                     var firstXV2 = surgeryListV2.OrderBy(s => s.Surgeon.LastName).Take(TopX);
@@ -100,11 +130,11 @@ namespace App1.Views
                     var displayModels = DisplayModels.GetFrom(firstXV2);
 
                     Items = new ObservableCollection<Surgery>(displayModels);
-                    MyListView.ItemsSource = Items;
+                    MySurgeries.ItemsSource = Items;
                 }
                 else 
                 {
-                    var surgeryList = Realm.All<Surgery>().ToList();
+                    var surgeryList = medicalRealm.All<Surgery>().ToList();
                     TotalEntries.Text = $"Showing {TopX} out of {surgeryList.Count} entries";
 
                     var firstX = surgeryList.OrderBy(s => s.Surgeon.LastName).Take(TopX);
@@ -114,7 +144,7 @@ namespace App1.Views
                     var observableList = new ObservableCollection<Surgery>(displayModels);
 
                     Items = observableList;
-                    MyListView.ItemsSource = Items;
+                    MySurgeries.ItemsSource = Items;
                 }  
             }
             catch (Exception ex)
@@ -139,15 +169,15 @@ namespace App1.Views
             if (entityToRemove != null)
             {
                 Items.Remove(entityToRemove);
-                MyListView.ItemsSource = Items;
+                MySurgeries.ItemsSource = Items;
 
-                var toRemove = Realm.Find<Surgery>(objectId);
+                var toRemove = medicalRealm.Find<Surgery>(objectId);
 
                 if (toRemove != null)
                 {
-                    Realm.Write(() =>
+                    medicalRealm.Write(() =>
                     {
-                        Realm.Remove(toRemove);
+                        medicalRealm.Remove(toRemove);
                     }); 
                 }
             }
@@ -158,7 +188,7 @@ namespace App1.Views
             var entityId = button.CommandParameter.ToString();
             var objectId = new ObjectId(entityId);
             
-            var toUpdate = Realm.Find<Surgery>(objectId);
+            var toUpdate = medicalRealm.Find<Surgery>(objectId);
             if (toUpdate != null)
             {
                 var procedure = toUpdate.Procedure;
@@ -175,7 +205,7 @@ namespace App1.Views
                 
                 newProcedure.Name = newName;
 
-                Realm.Write(() =>
+                medicalRealm.Write(() =>
                 {
                     toUpdate.Procedure = newProcedure;
 
@@ -183,7 +213,7 @@ namespace App1.Views
                     if (listViewItem != null && !listViewItem.Procedure.Name.Equals(newName))
                     {
                         listViewItem.Procedure.Name = newName;
-                        MyListView.ItemsSource = Items;
+                        MySurgeries.ItemsSource = Items;
                     }
                     
                 });
@@ -210,11 +240,11 @@ namespace App1.Views
 
             try
             {
-                var newSurgery = new Surgery(name, CurrentPartition, "ANDROID");
+                var newSurgery = new Surgery(name, AppUserPartition, "ANDROID");
 
-                Realm.Write(() =>
+                medicalRealm.Write(() =>
                 {
-                    Realm.Add(newSurgery);
+                    medicalRealm.Add(newSurgery);
                 }); 
             }
             catch (Exception ex)
@@ -227,11 +257,18 @@ namespace App1.Views
 
         protected override async void OnDisappearing()
         {
-            Realm.Dispose();
-            await RealmApp.CurrentUser.LogOutAsync();
+            medicalRealm.Dispose();
+            personRealm.Dispose();
+            projectRealm.Dispose();
 
-            CurrentPartition = string.Empty;
-            MyListView.ItemsSource = null;
+            await RealmApp.CurrentUser.LogOutAsync();
+            RealmApp = null;
+
+            AppUserPartition = string.Empty;
+            ProjectPartition = string.Empty;
+            PersonPartition = string.Empty;
+
+            MySurgeries.ItemsSource = null;
         }
     }
 }
