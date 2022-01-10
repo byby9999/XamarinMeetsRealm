@@ -5,10 +5,9 @@
     <ContentPage.Content>
         <StackLayout>
             <!-- Place new controls here -->
-            <Label x:Name="ChosenUser" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Title" TextColor="Red" />
-            <Label x:Name="ChosenProject" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Title" TextColor="Red" />
-
-            <Label Text="People:" FontSize="Medium" TextColor="LimeGreen"></Label>
+            <Label x:Name="LoggedIn" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Title" TextColor="Red" />
+            <Label x:Name="RealmsChosen" HorizontalOptions="EndAndExpand" FontSize="Medium" TextColor="RoyalBlue"></Label>
+            <Label x:Name="PeopleCount" FontSize="Medium" TextColor="LimeGreen"></Label>
             <ListView x:Name="People" ItemsSource="{Binding PeopleItems}" CachingStrategy="RecycleElement">
                 <ListView.ItemTemplate>
                     <DataTemplate>
@@ -21,7 +20,7 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Label Text="Preferences:" FontSize="Medium" TextColor="DarkBlue"></Label>
+            <Label x:Name="PreferenceCount" FontSize="Medium" TextColor="DarkBlue"></Label>
             <ListView x:Name="Preferences" ItemsSource="{Binding PreferenceItems}" CachingStrategy="RecycleElement">
                 <ListView.ItemTemplate>
                     <DataTemplate>
@@ -35,7 +34,7 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Label Text="Tasks:" FontSize="Medium" TextColor="DeepPink"></Label>
+            <Label x:Name="TasksCount" FontSize="Medium" TextColor="DeepPink"></Label>
             <ListView x:Name="Tasks" ItemsSource="{Binding TaskItems}" CachingStrategy="RecycleElement">
                 <ListView.ItemTemplate>
                     <DataTemplate>
@@ -49,7 +48,7 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Label Text="Reports:" FontSize="Medium" TextColor="Teal"></Label>
+            <Label x:Name="ReportCount" FontSize="Medium" TextColor="Teal"></Label>
             <ListView x:Name="Reports" ItemsSource="{Binding ReportItems}" CachingStrategy="RecycleElement">
                 <ListView.ItemTemplate>
                     <DataTemplate>
@@ -64,6 +63,7 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+            <Label x:Name="Stats"></Label>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

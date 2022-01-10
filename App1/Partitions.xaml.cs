@@ -5,6 +5,7 @@ using Realms.Sync;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,10 +23,12 @@ namespace App1.Views
         private const string appId = "myapp-nktiq";
         public static Realms.Sync.App RealmApp;
 
-        public static Realm userRealm;
+        public static Realm medicalRealm;
+        public static Realm personRealm;
         public static Realm projectRealm;
 
-        public static string UserPartition = string.Empty;
+        public static string AppUserPartition = string.Empty;
+        public static string PersonPartition = string.Empty;
         public static string ProjectPartition = string.Empty;
 
         public static int TopX = 10;
@@ -71,37 +74,53 @@ namespace App1.Views
 
         protected override async void OnAppearing()
         {
-            string userOption = await DisplayActionSheet("Login as:", "Cancel", null, 
-                "user=5", "user=2", "user=3");
+            string appUser = await DisplayActionSheet("Login to App as:", "Cancel", null,
+                "test12@example.com", "test34@example.com", "test56@example.com", "test78@example.com");
+            string pass = appUser.Split(new char[] { '@' })[0];
 
-            string projectOption = await DisplayActionSheet("choose project:", "cancel", null, 
+            string personOption = await DisplayActionSheet("Choose a person:", "Cancel", null,
+                "person=1", "person=2", "person=3");
+
+            string projectOption = await DisplayActionSheet("Choose project:", "cancel", null, 
                 "project=A", "project=B", "project=C");
 
-            if (userOption != UserPartition || projectOption != ProjectPartition)
+            if (personOption != PersonPartition || projectOption != ProjectPartition)
             {
-                var user = await RealmApp.LogInAsync(Credentials.EmailPassword("test12@example.com", "test12"));
+                //this sets a value to RealmApp.CurrentUser:
+                var user = await RealmApp.LogInAsync(Credentials.EmailPassword(appUser, pass));
 
-                ChosenUser.Text = userOption;
-                ChosenProject.Text = projectOption;
+                LoggedIn.Text = appUser;
 
-                UserPartition = userOption;
+                RealmsChosen.Text = $"{personOption}, {projectOption}";
+
+                PersonPartition = personOption;
                 ProjectPartition = projectOption;
+
+                AppUserPartition = RealmApp.CurrentUser.Id;
             }
-            await PopulateItemsList(userOption, projectOption);
+            await PopulateItemsList(personOption, projectOption);
         }
 
-        private async AsyncTask PopulateItemsList(string userPartition, string projectPartition)
+        private async AsyncTask PopulateItemsList(string personPartition, string projectPartition)
         {
-            SyncConfiguration syncConfigUsers = new SyncConfiguration(userPartition, RealmApp.CurrentUser);
+            SyncConfiguration syncConfigMedical = new SyncConfiguration(AppUserPartition, RealmApp.CurrentUser);
+            SyncConfiguration syncConfigUsers = new SyncConfiguration(personPartition, RealmApp.CurrentUser);
             SyncConfiguration syncConfigProjects = new SyncConfiguration(projectPartition, RealmApp.CurrentUser);
 
             try
             {
-                userRealm = await Realm.GetInstanceAsync(syncConfigUsers);
+                medicalRealm = await Realm.GetInstanceAsync(syncConfigMedical);
+                personRealm = await Realm.GetInstanceAsync(syncConfigUsers);
                 projectRealm = await Realm.GetInstanceAsync(syncConfigProjects);
 
-                var people = userRealm.All<Person>().ToList();
-                var preferences = userRealm.All<Preference>().ToList();
+                Stopwatch s = new Stopwatch();
+                s.Start();
+                var surgeries = medicalRealm.All<Surgery>();
+                s.Stop();
+                Stats.Text = $"Read {surgeries.Count()} surgeries in {s.ElapsedMilliseconds} ms";
+
+                var people = personRealm.All<Person>().ToList();
+                var preferences = personRealm.All<Preference>().ToList();
 
                 foreach(var p in preferences) 
                 {
@@ -118,23 +137,33 @@ namespace App1.Views
                 People.ItemsSource = PeopleItems;
                 Preferences.ItemsSource = PreferenceItems;
                 Tasks.ItemsSource = TaskItems;
-                Reports.ItemsSource = ReportItems;               
+                Reports.ItemsSource = ReportItems;
+
+                PeopleCount.Text = $"People ({people.Count()})";
+                PreferenceCount.Text = $"Preferences ({preferences.Count()})";
+
+                TasksCount.Text = $"Tasks ({tasks.Count()})";
+                ReportCount.Text = $"Reports ({reports.Count()})";
 
             }
             catch (Exception e)
             {
+                OnDisappearing();
                 await DisplayAlert("Error", e.Message, "ok");
             }
         }
 
         protected override async void OnDisappearing()
         {
-            userRealm.Dispose();
+            medicalRealm.Dispose();
+            personRealm.Dispose();
             projectRealm.Dispose();
             await RealmApp.CurrentUser.LogOutAsync();
 
-            UserPartition = string.Empty;
+            AppUserPartition = string.Empty;
+            PersonPartition = string.Empty;
             ProjectPartition = string.Empty;
+
             People.ItemsSource = null;
             Preferences.ItemsSource = null;
             Tasks.ItemsSource = null;
