@@ -7,13 +7,13 @@
             <!-- Place new controls here -->
             <Label x:Name="LoggedIn" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Title" TextColor="Red" />
             <Label x:Name="RealmsChosen" HorizontalOptions="EndAndExpand" FontSize="Medium" TextColor="RoyalBlue"></Label>
-            <Label x:Name="PeopleCount" FontSize="Medium" TextColor="LimeGreen"></Label>
+            <Label x:Name="PeopleCount" FontSize="Medium" TextColor="DarkBlue"></Label>
             <ListView x:Name="People" ItemsSource="{Binding PeopleItems}" CachingStrategy="RecycleElement">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
                             <StackLayout Orientation="Horizontal">
-                                <Label Text="{Binding Name, Mode=TwoWay}" WidthRequest="300" TextColor="LimeGreen" />
+                                <Label Text="{Binding Name, Mode=TwoWay}" WidthRequest="300" TextColor="DarkBlue" />
                             </StackLayout>
                         </ViewCell>
                     </DataTemplate>
@@ -34,13 +34,13 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Label x:Name="TasksCount" FontSize="Medium" TextColor="DeepPink"></Label>
+            <Label x:Name="TasksCount" FontSize="Medium" TextColor="DarkBlue"></Label>
             <ListView x:Name="Tasks" ItemsSource="{Binding TaskItems}" CachingStrategy="RecycleElement">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
                             <StackLayout Orientation="Horizontal">
-                                <Label Text="{Binding Title, Mode=TwoWay}" WidthRequest="300" TextColor="DeepPink" />
+                                <Label Text="{Binding Title, Mode=TwoWay}" TextColor="DarkBlue" />
                                
                             </StackLayout>
                         </ViewCell>
@@ -48,16 +48,16 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Label x:Name="ReportCount" FontSize="Medium" TextColor="Teal"></Label>
+            <Label x:Name="ReportCount" FontSize="Medium" TextColor="DarkBlue"></Label>
             <ListView x:Name="Reports" ItemsSource="{Binding ReportItems}" CachingStrategy="RecycleElement">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
                             <StackLayout Orientation="Horizontal">
-                                <Label Text="Money" TextColor="Teal"></Label>
-                                <Label Text="{Binding Money, Mode=TwoWay}" TextColor="Teal" />
-                                <Label Text="Time" TextColor="Teal"></Label>
-                                <Label Text="{Binding Time, Mode=TwoWay}" TextColor="Teal" />
+                                <Label Text="Money" TextColor="DarkBlue"></Label>
+                                <Label Text="{Binding Money, Mode=TwoWay}" TextColor="DarkBlue" />
+                                <Label Text="Time" TextColor="DarkBlue"></Label>
+                                <Label Text="{Binding Time, Mode=TwoWay}" TextColor="DarkBlue" />
                             </StackLayout>
                         </ViewCell>
                     </DataTemplate>
