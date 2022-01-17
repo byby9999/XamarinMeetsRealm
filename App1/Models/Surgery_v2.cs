@@ -5,7 +5,7 @@ using Realms;
 
 namespace App1.Models
 {
-    //Version description : Added field Message, removed field Duration
+    //Version description : Added field Message, removed field Duration (additive changes only)
     public class Surgery_v2 : RealmObject
     {
         [PrimaryKey]
@@ -39,8 +39,22 @@ namespace App1.Models
         {
             Id = ObjectId.GenerateNewId();
             Partition = partition;
-            Procedure = new Surgery_v2_Procedure { Code = "XXX", Name = "test surgery" };
+            Procedure = new Surgery_v2_Procedure("XXX", "test surgery");
             Surgeon = new Surgery_v2_Surgeon { Code = "9000", FirstName = "Ana", LastName = "popescu", Title = "Mrs" };
+        }
+        public Surgery_v2(string name, string partitionValue, string bodySideDesc)
+        {
+            Procedure = new Surgery_v2_Procedure("PRT123", name);
+            BodySide = new Surgery_v2_BodySide { Code = "AXD", Description = bodySideDesc };
+            Message = "v2_message";
+            Id = ObjectId.GenerateNewId();
+            Lines = 4;
+            Patient = new Surgery_v2_Patient { PatientIdentificationNumber = "PAt123" };
+            Reference = "V2REF";
+            Partition = partitionValue;
+            TheatreTotalcost = 123;
+            Theatre = new Surgery_v2_Theatre { Code = "TH1BC", Description = "Test theatre" };
+            Surgeon = new Surgery_v2_Surgeon { LastName = "Abraham", FirstName = "Alex", Code = "xxx.x/x-x_x", Title = "Mr" };
         }
     }
     public class Surgery_v2_BodySide : EmbeddedObject
@@ -57,6 +71,20 @@ namespace App1.Models
     {
         public string Code { get; set; }
         public string Name { get; set; }
+
+        public Surgery_v2_Procedure()
+        {
+
+        }
+        public Surgery_v2_Procedure(string code)
+        {
+            this.Code = code;
+        }
+        public Surgery_v2_Procedure(string code, string name)
+        {
+            this.Code = code;
+            this.Name = name;
+        }
     }
     public class Surgery_v2_Surgeon : EmbeddedObject
     {

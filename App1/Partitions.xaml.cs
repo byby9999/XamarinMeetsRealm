@@ -193,6 +193,5 @@ namespace App1.Views
             Tasks.ItemsSource = null;
             Reports.ItemsSource = null;
         }
-
     }
 }

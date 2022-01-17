@@ -20,11 +20,25 @@ namespace App1.Models
                         Title = x.Surgeon.Title,
                         Code = x.Surgeon.Code
                     },
-                    Procedure = new Surgery_Procedure
+                    Procedure = new Surgery_Procedure(x.Procedure.Code, x.Procedure.Name),
+                    Extra = string.IsNullOrEmpty(x.Message) ? " " : "M"
+                }).ToList();
+        }
+
+        public static List<Surgery> GetFrom(IEnumerable<Surgery_v3> list)
+        {
+            return list.Select(x =>
+                new Surgery
+                {
+                    Id = x.Id,
+                    Surgeon = new Surgery_Surgeon
                     {
-                        Code = x.Procedure.Code,
-                        Name = x.Procedure.Name
+                        FirstName = x.Surgeon.FirstName,
+                        LastName = x.Surgeon.LastName,
+                        Title = x.Surgeon.Title,
+                        Code = x.Surgeon.Code
                     },
+                    Procedure = new Surgery_Procedure(x.Procedure.Code, x.Procedure.Name),
                     Extra = string.IsNullOrEmpty(x.Message) ? " " : "M"
                 }).ToList();
         }
@@ -44,11 +58,7 @@ namespace App1.Models
                         Title = s.Surgeon.Title,
                         Code = s.Surgeon.Code
                     },
-                    Procedure = new Surgery_Procedure
-                    {
-                        Code = s.Procedure.Code,
-                        Name = s.Procedure.Name
-                    }
+                    Procedure = new Surgery_Procedure(s.Procedure.Code, s.Procedure.Name)
                 };
                 displayItem.Extra = s.V.HasValue ? s.V.ToString() : " ";
 

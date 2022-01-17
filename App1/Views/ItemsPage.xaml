@@ -17,7 +17,7 @@
     <ContentPage.Content>
         <StackLayout>
             <!-- Place new controls here -->
-            <Label x:Name="MyTitle" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Title" TextColor="Black" Text="Tap on Surgeries link below to start!" />
+            <Label x:Name="MyTitle" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Title" TextColor="Black" Text="Tap on 'Surgeries' or 'Mix' to start" />
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

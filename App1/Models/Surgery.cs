@@ -58,7 +58,7 @@ namespace App1.Models
         }
         public Surgery(string name, string partitionValue, string bodySideDesc)
         {
-            Procedure = new Surgery_Procedure { Code = "TEST123", Name = name };
+            Procedure = new Surgery_Procedure("TEST123", name);
             BodySide = new Surgery_BodySide { Code = "A", Description = bodySideDesc };
             Duration = "01:59:59";
             Id = ObjectId.GenerateNewId();
@@ -89,6 +89,20 @@ namespace App1.Models
         public string Code { get; set; }
 
         public string Name { get; set; }
+
+        public Surgery_Procedure()
+        {
+
+        }
+        public Surgery_Procedure(string code)
+        {
+            this.Code = code;
+        }
+        public Surgery_Procedure(string code, string name)
+        {
+            this.Code = code;
+            this.Name = name;
+        }
     }
 
     public class Surgery_Surgeon : EmbeddedObject
