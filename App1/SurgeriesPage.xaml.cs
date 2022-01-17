@@ -6,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -44,7 +42,7 @@ namespace App1.Views
         //modify this to change a user's specific data version. Available now: 1, 2, 3
         public static Dictionary<string, int> UsersDataVersions = new Dictionary<string, int>
         {
-            { "test12@example.com", 3},
+            { "test12@example.com", 2},
             { "test34@example.com", 1},
             { "test56@example.com", 1},
             { "test78@example.com", 1}
@@ -55,15 +53,15 @@ namespace App1.Views
         public SurgeriesPage()
         {
             InitializeComponent();
-            
+
             Items = new ObservableCollection<Surgery>();
             MySurgeries.ItemsSource = Items;
             try
             {
                 if (RealmApp == null)
                     RealmApp = Realms.Sync.App.Create(appId);
-            } 
-            catch(Exception e) 
+            }
+            catch (Exception e)
             {
                 DisplayAlert("Error", e.Message, "ok");
             }
@@ -79,20 +77,27 @@ namespace App1.Views
             string tenantOption = await DisplayActionSheet("Choose a person:", "Cancel", null,
                 "tenant=1", "tenant=2", "tenant=3");
 
-            string projectOption = await DisplayActionSheet("Choose a project:", "Cancel", null, 
+            string projectOption = await DisplayActionSheet("Choose a project:", "Cancel", null,
                 "project=A", "project=B", "project=C");
 
             if (tenantOption != TenantPartition || projectOption != ProjectPartition)
             {
                 //This method sets RealmApp.CurrentUser
-                var user = await RealmApp.LogInAsync(Credentials.EmailPassword(emailChosen, emailChosen.Split(new char[] { '@' })[0]));
-
-                Title.Text = $"{emailChosen} (v{CurrentDataVersion})";
-
-                AppUserPartition = RealmApp.CurrentUser.Id;
-                TenantPartition = tenantOption;
-                ProjectPartition = projectOption;
+                try
+                {
                 
+                    var user = await RealmApp.LogInAsync(Credentials.EmailPassword(emailChosen, emailChosen.Split(new char[] { '@' })[0]));
+
+                    Title.Text = $"{emailChosen} (v{CurrentDataVersion})";
+
+                    AppUserPartition = RealmApp.CurrentUser.Id;
+                    TenantPartition = tenantOption;
+                    ProjectPartition = projectOption;
+                }
+                catch (Exception eeee) 
+                {
+                    
+                }
                 SyncConfiguration syncConfigMedical = new SyncConfiguration(AppUserPartition, RealmApp.CurrentUser);
                 SyncConfiguration syncConfigProejct = new SyncConfiguration(ProjectPartition, RealmApp.CurrentUser);
                 SyncConfiguration syncConfigPeople = new SyncConfiguration(TenantPartition, RealmApp.CurrentUser);
@@ -116,7 +121,7 @@ namespace App1.Views
                     Subtitle.Text = $"{tenantOption}: {people.Count()} people, {preferences.Count()} prefs. {projectOption}: {tasks.Count()} tasks, {report.Count()} reports";
 
                 }
-                catch (Exception e) 
+                catch (Exception e)
                 {
                     await DisplayAlert("Error", e.Message, "ok");
                 }
@@ -129,7 +134,7 @@ namespace App1.Views
         {
             try
             {
-                switch (dataVersion) 
+                switch (dataVersion)
                 {
                     case 3:
                         {
@@ -155,7 +160,7 @@ namespace App1.Views
 
                             break;
                         }
-                    case 1: 
+                    case 1:
                         {
                             var surgeryList = medicalRealm.All<Surgery>().ToList();
                             TotalEntries.Text = $"Showing {TopX} out of {surgeryList.Count} entries";
@@ -173,6 +178,14 @@ namespace App1.Views
             catch (Exception ex)
             {
                 await DisplayAlert("Error", ex.Message, "ok");
+            }
+            finally
+            {
+                var maxVersion = UsersDataVersions.Max(pair => pair.Value);
+                if (dataVersion < maxVersion)
+                {
+                    GetNewVersion.IsVisible = true;
+                }
             }
         }
 
@@ -193,46 +206,46 @@ namespace App1.Views
                 Items.Remove(toRemoveFromListView);
                 MySurgeries.ItemsSource = Items;
             }
-                switch (CurrentDataVersion)
-                {
-                    case 3:
+            switch (CurrentDataVersion)
+            {
+                case 3:
+                    {
+                        var surgeryToRemove = medicalRealm.Find<Surgery_v3>(objectId);
+                        if (surgeryToRemove != null)
                         {
-                            var surgeryToRemove = medicalRealm.Find<Surgery_v3>(objectId);
-                            if (surgeryToRemove != null)
+                            medicalRealm.Write(() =>
                             {
-                                medicalRealm.Write(() =>
-                                {
-                                    medicalRealm.Remove(surgeryToRemove);
-                                });
-                            }
-                            break;
+                                medicalRealm.Remove(surgeryToRemove);
+                            });
                         }
-                    case 2:
+                        break;
+                    }
+                case 2:
+                    {
+                        var surgeryToRemove = medicalRealm.Find<Surgery_v2>(objectId);
+                        if (surgeryToRemove != null)
                         {
-                            var surgeryToRemove = medicalRealm.Find<Surgery_v2>(objectId);
-                            if (surgeryToRemove != null)
+                            medicalRealm.Write(() =>
                             {
-                                medicalRealm.Write(() =>
-                                {
-                                    medicalRealm.Remove(surgeryToRemove);
-                                });
-                            }
-                            break;
+                                medicalRealm.Remove(surgeryToRemove);
+                            });
                         }
-                    case 1:
+                        break;
+                    }
+                case 1:
+                    {
+                        var surgeryToRemove = medicalRealm.Find<Surgery>(objectId);
+                        if (surgeryToRemove != null)
                         {
-                            var surgeryToRemove = medicalRealm.Find<Surgery>(objectId);
-                            if (surgeryToRemove != null)
+                            medicalRealm.Write(() =>
                             {
-                                medicalRealm.Write(() =>
-                                {
-                                    medicalRealm.Remove(surgeryToRemove);
-                                });
-                            }
-                            break;
+                                medicalRealm.Remove(surgeryToRemove);
+                            });
                         }
-                } 
+                        break;
+                    }
             }
+        }
         private async void editButton_Clicked(object sender, EventArgs e)
         {
             var button = (ImageButton)sender;
@@ -248,7 +261,7 @@ namespace App1.Views
                     {
                         var procedure = surgery3.Procedure;
                         var newProcedure = new Surgery_v3_Procedure(procedure.Code);
-                        
+
                         newName = await DisplayPromptAsync("Edit Surgery", "New Procedure Name:", initialValue: surgery3.Procedure.Name);
 
                         if (newName == null)
@@ -325,13 +338,13 @@ namespace App1.Views
             }
 
             string name = await DisplayPromptAsync("New Surgery Details", "Enter procedure name here", initialValue: randomName);
-            
+
             if (name == null)
                 return;
 
             try
             {
-                switch (CurrentDataVersion) 
+                switch (CurrentDataVersion)
                 {
                     case 3:
                         var surgeryV3 = new Surgery_v3(name, AppUserPartition, "bodyside-3");
@@ -354,7 +367,7 @@ namespace App1.Views
                             medicalRealm.Add(surgeryV1);
                         });
                         break;
-                } 
+                }
             }
             catch (Exception ex)
             {
