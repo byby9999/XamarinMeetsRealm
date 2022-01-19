@@ -11,6 +11,7 @@ using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 using AsyncTask = System.Threading.Tasks.Task;
+using App1.Business;
 
 namespace App1.Views
 {
@@ -31,6 +32,8 @@ namespace App1.Views
         public static int CurrentDataVersion = 1;
         public static int TopX = 10;
 
+        public static bool IsSyncPaused = false;
+
         public static Dictionary<string, string> UserPartitionsMap = new Dictionary<string, string>()
         {
             { "test12@example.com", "61c058e5559668e69ad62a8d" },
@@ -38,13 +41,14 @@ namespace App1.Views
             { "test56@example.com", "61c084f8f89724893240b892" },
             { "test78@example.com", "61c08508c0a82d01340e0458" }
         };
+            
 
         //modify this to change a user's specific data version. Available now: 1, 2, 3
-        public static Dictionary<string, int> UsersDataVersions = new Dictionary<string, int>
+        public static Dictionary<string, int> UsersDataVersionsMap = new Dictionary<string, int>
         {
-            { "test12@example.com", 2},
-            { "test34@example.com", 1},
-            { "test56@example.com", 1},
+            { "test12@example.com", 1},
+            { "test34@example.com", 2},
+            { "test56@example.com", 3},
             { "test78@example.com", 1}
         };
 
@@ -59,7 +63,9 @@ namespace App1.Views
             try
             {
                 if (RealmApp == null)
+                {
                     RealmApp = Realms.Sync.App.Create(appId);
+                }
             }
             catch (Exception e)
             {
@@ -71,8 +77,12 @@ namespace App1.Views
         {
             string emailChosen = await DisplayActionSheet("Login as:", "Cancel", null,
                 "test12@example.com", "test34@example.com", "test56@example.com", "test78@example.com");
+            
+            if (emailChosen == null)
+                return;
+            string pass = emailChosen.Split(new char[] { '@' })[0];
 
-            CurrentDataVersion = UsersDataVersions[emailChosen];
+            CurrentDataVersion = UsersDataVersionsMap[emailChosen];
 
             string tenantOption = await DisplayActionSheet("Choose a person:", "Cancel", null,
                 "tenant=1", "tenant=2", "tenant=3");
@@ -82,22 +92,36 @@ namespace App1.Views
 
             if (tenantOption != TenantPartition || projectOption != ProjectPartition)
             {
-                //This method sets RealmApp.CurrentUser
                 try
                 {
-                
-                    var user = await RealmApp.LogInAsync(Credentials.EmailPassword(emailChosen, emailChosen.Split(new char[] { '@' })[0]));
+                    if (RealmApp == null) 
+                    {
+                        RealmApp = Realms.Sync.App.Create(appId);
+                    }
 
-                    Title.Text = $"{emailChosen} (v{CurrentDataVersion})";
+                    //LogInAsync method sets RealmApp.CurrentUser
+                    var user = await RealmApp.LogInAsync(Credentials.EmailPassword(emailChosen, pass));
+
+                    await user.RefreshCustomDataAsync();
+
+                    var cud = user.GetCustomData<CustomUserData>();
+
+                    Title.Text = $"{emailChosen} (v {CurrentDataVersion})";
 
                     AppUserPartition = RealmApp.CurrentUser.Id;
                     TenantPartition = tenantOption;
                     ProjectPartition = projectOption;
                 }
-                catch (Exception eeee) 
+                catch (Exception realmEx) 
                 {
-                    
+
+                    await DisplayAlert(
+                        realmEx.GetBaseException().GetType().ToString(), 
+                        realmEx.GetBaseException().Message, 
+                        "ok");
+                    return;
                 }
+
                 SyncConfiguration syncConfigMedical = new SyncConfiguration(AppUserPartition, RealmApp.CurrentUser);
                 SyncConfiguration syncConfigProejct = new SyncConfiguration(ProjectPartition, RealmApp.CurrentUser);
                 SyncConfiguration syncConfigPeople = new SyncConfiguration(TenantPartition, RealmApp.CurrentUser);
@@ -138,9 +162,10 @@ namespace App1.Views
                 {
                     case 3:
                         {
-                            var surgeryListV3 = medicalRealm.All<Surgery_v3>().ToList();
+                            var surgeryListV3 = SurgeryBusiness.GetSurgeryList_v3(medicalRealm);
+
                             TotalEntries.Text = $"Showing {TopX} out of {surgeryListV3.Count} entries";
-                            var firstX = surgeryListV3.OrderBy(s => s.Surgeon.LastName).Take(TopX);
+                            var firstX = surgeryListV3.Take(TopX);
                             var displayModels = DisplayModels.GetFrom(firstX);
 
                             Items = new ObservableCollection<Surgery>(displayModels);
@@ -150,21 +175,21 @@ namespace App1.Views
                         }
                     case 2:
                         {
-                            var surgeryListV2 = medicalRealm.All<Surgery_v2>().ToList();
+                            var surgeryListV2 = SurgeryBusiness.GetSurgeryList_v2(medicalRealm);
                             TotalEntries.Text = $"Showing {TopX} out of {surgeryListV2.Count} entries";
-                            var firstX = surgeryListV2.OrderBy(s => s.Surgeon.LastName).Take(TopX);
+                            var firstX = surgeryListV2.Take(TopX);
                             var displayModels = DisplayModels.GetFrom(firstX);
 
                             Items = new ObservableCollection<Surgery>(displayModels);
                             MySurgeries.ItemsSource = Items;
-
+                            
                             break;
                         }
                     case 1:
                         {
-                            var surgeryList = medicalRealm.All<Surgery>().ToList();
+                            var surgeryList = SurgeryBusiness.GetSurgeryList(medicalRealm);
                             TotalEntries.Text = $"Showing {TopX} out of {surgeryList.Count} entries";
-                            var firstX = surgeryList.OrderBy(s => s.Surgeon.LastName).Take(TopX);
+                            var firstX = surgeryList.Take(TopX);
                             var displayModels = DisplayModels.GetFrom(firstX);
 
                             var observableList = new ObservableCollection<Surgery>(displayModels);
@@ -181,10 +206,10 @@ namespace App1.Views
             }
             finally
             {
-                var maxVersion = UsersDataVersions.Max(pair => pair.Value);
+                var maxVersion = UsersDataVersionsMap.Max(pair => pair.Value);
                 if (dataVersion < maxVersion)
                 {
-                    GetNewVersion.IsVisible = true;
+                    UpdateVersion.IsVisible = true;
                 }
             }
         }
@@ -325,6 +350,8 @@ namespace App1.Views
         }
         private async void addButton_Clicked(object sender, EventArgs e)
         {
+            medicalRealm.SyncSession.Stop();
+
             Random r = new Random();
             int randomPosition;
             string alphabet = "abcdefghijklmnopqrstuvwxyz";
@@ -344,10 +371,12 @@ namespace App1.Views
 
             try
             {
+                medicalRealm.SyncSession.Start();
                 switch (CurrentDataVersion)
                 {
                     case 3:
                         var surgeryV3 = new Surgery_v3(name, AppUserPartition, "bodyside-3");
+                        
                         medicalRealm.Write(() =>
                         {
                             medicalRealm.Add(surgeryV3);
@@ -355,6 +384,7 @@ namespace App1.Views
                         break;
                     case 2:
                         var surgeryV2 = new Surgery_v2(name, AppUserPartition, "bodyside-2");
+                        
                         medicalRealm.Write(() =>
                         {
                             medicalRealm.Add(surgeryV2);
@@ -362,6 +392,7 @@ namespace App1.Views
                         break;
                     case 1:
                         var surgeryV1 = new Surgery(name, AppUserPartition, "bodyside-1");
+                        
                         medicalRealm.Write(() =>
                         {
                             medicalRealm.Add(surgeryV1);
@@ -377,12 +408,24 @@ namespace App1.Views
             await PopulateItemsList(CurrentDataVersion);
         }
 
+        private async void updateVersionButton_Clicked(object sender, EventArgs e) 
+        {
+            var maxVersion = UsersDataVersionsMap.Max(pair => pair.Value);
+            CurrentDataVersion = maxVersion;
+            UsersDataVersionsMap[RealmApp.CurrentUser.Profile.Email] = maxVersion;
+
+
+        }
+
 
         protected override async void OnDisappearing()
         {
-            medicalRealm.Dispose();
-            personRealm.Dispose();
-            projectRealm.Dispose();
+            if (medicalRealm != null)
+                medicalRealm.Dispose();
+            if (personRealm != null)
+                personRealm.Dispose();
+            if (projectRealm != null)
+                projectRealm.Dispose();
 
             await RealmApp.CurrentUser.LogOutAsync();
             RealmApp = null;
