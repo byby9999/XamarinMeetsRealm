@@ -12,7 +12,6 @@ namespace App1.Business
         public static List<Surgery> GetSurgeryList(Realm realm) 
         {
             return realm.All<Surgery>().OrderBy(s => s.Surgeon.LastName).ToList();
-
         }
         public static List<Surgery_v2> GetSurgeryList_v2(Realm realm)
         {

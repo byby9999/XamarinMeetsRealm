@@ -12,13 +12,13 @@ using Xamarin.Forms.Xaml;
 
 using AsyncTask = System.Threading.Tasks.Task;
 using App1.Business;
+using Realms.Sync.Exceptions;
 
 namespace App1.Views
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class SurgeriesPage : ContentPage
     {
-        private const string appId = "myapp-nktiq";
         public static Realms.Sync.App RealmApp;
 
         private static Realm medicalRealm;
@@ -47,8 +47,8 @@ namespace App1.Views
         public static Dictionary<string, int> UsersDataVersionsMap = new Dictionary<string, int>
         {
             { "test12@example.com", 1},
-            { "test34@example.com", 2},
-            { "test56@example.com", 3},
+            { "test34@example.com", 1},
+            { "test56@example.com", 1},
             { "test78@example.com", 1}
         };
 
@@ -57,14 +57,14 @@ namespace App1.Views
         public SurgeriesPage()
         {
             InitializeComponent();
-
+            
             Items = new ObservableCollection<Surgery>();
             MySurgeries.ItemsSource = Items;
             try
             {
                 if (RealmApp == null)
                 {
-                    RealmApp = Realms.Sync.App.Create(appId);
+                    RealmApp = Realms.Sync.App.Create(ConfigValues.AppId);
                 }
             }
             catch (Exception e)
@@ -96,15 +96,13 @@ namespace App1.Views
                 {
                     if (RealmApp == null) 
                     {
-                        RealmApp = Realms.Sync.App.Create(appId);
+                        RealmApp = Realms.Sync.App.Create(ConfigValues.AppId);
                     }
 
                     //LogInAsync method sets RealmApp.CurrentUser
                     var user = await RealmApp.LogInAsync(Credentials.EmailPassword(emailChosen, pass));
 
-                    await user.RefreshCustomDataAsync();
-
-                    var cud = user.GetCustomData<CustomUserData>();
+                    //var cud = user.GetCustomData<CustomUserData>();
 
                     Title.Text = $"{emailChosen} (v {CurrentDataVersion})";
 
@@ -147,7 +145,7 @@ namespace App1.Views
                 }
                 catch (Exception e)
                 {
-                    await DisplayAlert("Error", e.Message, "ok");
+                    await DisplayAlert($"{e.InnerException.GetType()} Error", e.InnerException.Message, "ok");
                 }
             }
 
@@ -206,10 +204,17 @@ namespace App1.Views
             }
             finally
             {
-                var maxVersion = UsersDataVersionsMap.Max(pair => pair.Value);
-                if (dataVersion < maxVersion)
+                Title.Text = $"{RealmApp.CurrentUser.Profile.Email} (v {CurrentDataVersion})";
+
+                var maxVersion = ConfigValues.MaxVersionToUpgrade;
+                if (CurrentDataVersion < maxVersion)
                 {
                     UpdateVersion.IsVisible = true;
+                    UpdateVersion.Text = $"Update to latest version: {ConfigValues.MaxVersionToUpgrade}";
+                }
+                else 
+                {
+                    UpdateVersion.IsVisible = false;
                 }
             }
         }
@@ -410,11 +415,10 @@ namespace App1.Views
 
         private async void updateVersionButton_Clicked(object sender, EventArgs e) 
         {
-            var maxVersion = UsersDataVersionsMap.Max(pair => pair.Value);
-            CurrentDataVersion = maxVersion;
-            UsersDataVersionsMap[RealmApp.CurrentUser.Profile.Email] = maxVersion;
+            CurrentDataVersion = ConfigValues.MaxVersionToUpgrade;
+            UsersDataVersionsMap[RealmApp.CurrentUser.Profile.Email] = ConfigValues.MaxVersionToUpgrade;
 
-
+            await PopulateItemsList(CurrentDataVersion);
         }
 
 
