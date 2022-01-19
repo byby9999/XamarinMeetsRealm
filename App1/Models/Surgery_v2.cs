@@ -97,7 +97,7 @@ namespace App1.Models
     {
         public string Code { get; set; }
         public string Description { get; set; }
-        public DateTimeOffset? ExpiryDate { get; set; }
+        public string ExpiryDate { get; set; }
         public string LotNumber { get; set; }
         public int? Quantity { get; set; }
         public string SerialNumber { get; set; }

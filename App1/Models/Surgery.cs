@@ -2,6 +2,7 @@
 using Realms;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace App1.Models
 {
@@ -38,7 +39,7 @@ namespace App1.Models
         [MapTo("_partition")]
         [Required]
         public string Partition { get; set; }
-        
+
         [MapTo("v")]
         public int? V { get; set; }
 
@@ -122,7 +123,7 @@ namespace App1.Models
 
         public string Description { get; set; }
 
-        public DateTimeOffset? ExpiryDate { get; set; }
+        public string ExpiryDate { get; set; }
 
         public string LotNumber { get; set; }
 
@@ -164,5 +165,4 @@ namespace App1.Models
 
         public string Description { get; set; }
     }
-
 }
