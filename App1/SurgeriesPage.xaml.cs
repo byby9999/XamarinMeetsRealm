@@ -32,25 +32,6 @@ namespace App1.Views
         public static int CurrentDataVersion = 1;
         public static int TopX = 10;
 
-        public static bool IsSyncPaused = false;
-
-        public static Dictionary<string, string> UserPartitionsMap = new Dictionary<string, string>()
-        {
-            { "test12@example.com", "61c058e5559668e69ad62a8d" },
-            { "test34@example.com", "61c066a7559668e69ad78346" },
-            { "test56@example.com", "61c084f8f89724893240b892" },
-            { "test78@example.com", "61c08508c0a82d01340e0458" }
-        };
-            
-
-        //modify this to change a user's specific data version. Available now: 1, 2, 3
-        public static Dictionary<string, int> UsersDataVersionsMap = new Dictionary<string, int>
-        {
-            { "test12@example.com", 1},
-            { "test34@example.com", 1},
-            { "test56@example.com", 1},
-            { "test78@example.com", 1}
-        };
 
         public ObservableCollection<Surgery> Items { get; set; }
 
@@ -82,7 +63,7 @@ namespace App1.Views
                 return;
             string pass = emailChosen.Split(new char[] { '@' })[0];
 
-            CurrentDataVersion = UsersDataVersionsMap[emailChosen];
+            CurrentDataVersion = ConfigValues.UsersDataVersionsMap[emailChosen];
 
             string tenantOption = await DisplayActionSheet("Choose a person:", "Cancel", null,
                 "tenant=1", "tenant=2", "tenant=3");
@@ -206,8 +187,7 @@ namespace App1.Views
             {
                 Title.Text = $"{RealmApp.CurrentUser.Profile.Email} (v {CurrentDataVersion})";
 
-                var maxVersion = ConfigValues.MaxVersionToUpgrade;
-                if (CurrentDataVersion < maxVersion)
+                if (CurrentDataVersion < ConfigValues.MaxVersionToUpgrade)
                 {
                     UpdateVersion.IsVisible = true;
                     UpdateVersion.Text = $"Update to latest version: {ConfigValues.MaxVersionToUpgrade}";
@@ -416,7 +396,8 @@ namespace App1.Views
         private async void updateVersionButton_Clicked(object sender, EventArgs e) 
         {
             CurrentDataVersion = ConfigValues.MaxVersionToUpgrade;
-            UsersDataVersionsMap[RealmApp.CurrentUser.Profile.Email] = ConfigValues.MaxVersionToUpgrade;
+
+            ConfigValues.UsersDataVersionsMap[RealmApp.CurrentUser.Profile.Email] = ConfigValues.MaxVersionToUpgrade;
 
             await PopulateItemsList(CurrentDataVersion);
         }
