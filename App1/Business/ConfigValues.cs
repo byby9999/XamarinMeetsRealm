@@ -6,7 +6,7 @@ namespace App1.Business
 {
     public static class ConfigValues
     {
-        public const string AppId = "myapp-nktiq";
+        public const string AppId = "mytestapp-blpjq"; //"myapp-nktiq";
 
         /// <summary>
         ///  We can find here the corresponding IDs of each app client
@@ -24,10 +24,10 @@ namespace App1.Business
         public static Dictionary<string, int> UsersDataVersionsMap = 
             new Dictionary<string, int>
             {
-                { "test12@example.com", 1},
-                { "test34@example.com", 1},
-                { "test56@example.com", 1},
-                { "test78@example.com", 1}
+                { "test12@example.com", 1 },
+                { "test34@example.com", 1 },
+                { "test56@example.com", 2 },
+                { "test78@example.com", 1 }
             };
 
 
@@ -37,6 +37,6 @@ namespace App1.Business
         /// Important - No intermediary steps will be done. e.g. if a client is in version 1 and MaxVersionToUpgrade is set to 3,
         /// and client chooses "Update", they will update directly from 1 to 3, skipping version 2.
         /// This way, we can ensure clients only update to latest versions available.
-        public const int MaxVersionToUpgrade = 2;
+        public const int MaxVersionToUpgrade = 3;
     }
 }

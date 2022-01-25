@@ -3,7 +3,6 @@ using MongoDB.Bson;
 using Realms;
 using Realms.Sync;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
@@ -12,7 +11,7 @@ using Xamarin.Forms.Xaml;
 
 using AsyncTask = System.Threading.Tasks.Task;
 using App1.Business;
-using Realms.Sync.Exceptions;
+using System.Diagnostics;
 
 namespace App1.Views
 {
@@ -57,19 +56,17 @@ namespace App1.Views
         protected override async void OnAppearing()
         {
             string emailChosen = await DisplayActionSheet("Login as:", "Cancel", null,
-                "test12@example.com", "test34@example.com", "test56@example.com", "test78@example.com");
+                "admin12@example.com");
             
             if (emailChosen == null)
                 return;
             string pass = emailChosen.Split(new char[] { '@' })[0];
 
-            CurrentDataVersion = ConfigValues.UsersDataVersionsMap[emailChosen];
+            CurrentDataVersion = 1;//ConfigValues.UsersDataVersionsMap[emailChosen];
 
-            string tenantOption = await DisplayActionSheet("Choose a person:", "Cancel", null,
-                "tenant=1", "tenant=2", "tenant=3");
+            string tenantOption = "tenant1";  //await DisplayActionSheet("Choose a person:", "Cancel", null, "tenant=1", "tenant=2", "tenant=3");
 
-            string projectOption = await DisplayActionSheet("Choose a project:", "Cancel", null,
-                "project=A", "project=B", "project=C");
+            string projectOption = "project=A"; // await DisplayActionSheet("Choose a project:", "Cancel", null, "project=A", "project=B", "project=C");
 
             if (tenantOption != TenantPartition || projectOption != ProjectPartition)
             {
@@ -101,28 +98,32 @@ namespace App1.Views
                     return;
                 }
 
-                SyncConfiguration syncConfigMedical = new SyncConfiguration(AppUserPartition, RealmApp.CurrentUser);
-                SyncConfiguration syncConfigProejct = new SyncConfiguration(ProjectPartition, RealmApp.CurrentUser);
-                SyncConfiguration syncConfigPeople = new SyncConfiguration(TenantPartition, RealmApp.CurrentUser);
+                SyncConfiguration syncConfigMedical = new SyncConfiguration("61c058e5559668e69ad62a8d", RealmApp.CurrentUser);
+                //SyncConfiguration syncConfigProejct = new SyncConfiguration(ProjectPartition, RealmApp.CurrentUser);
+                //SyncConfiguration syncConfigPeople = new SyncConfiguration(TenantPartition, RealmApp.CurrentUser);
                 try
                 {
+                    Stopwatch s = new Stopwatch();
+                    s.Start();
                     medicalRealm = await Realm.GetInstanceAsync(syncConfigMedical);
-                    personRealm = await Realm.GetInstanceAsync(syncConfigPeople);
-                    projectRealm = await Realm.GetInstanceAsync(syncConfigProejct);
+
+                    s.Stop();
+                    //personRealm = await Realm.GetInstanceAsync(syncConfigPeople);
+                    //projectRealm = await Realm.GetInstanceAsync(syncConfigProejct);
 
                     if (medicalRealm.SyncSession.State == SessionState.Inactive)
                     {
                         medicalRealm.SyncSession.Start();
                     }
 
-                    var people = personRealm.All<Person>();
-                    var preferences = personRealm.All<Preference>();
+                    //var people = personRealm.All<Person>();
+                    //var preferences = personRealm.All<Preference>();
 
-                    var tasks = projectRealm.All<Models.Task>();
-                    var report = projectRealm.All<Report>();
+                    //var tasks = projectRealm.All<Models.Task>();
+                    //var report = projectRealm.All<Report>();
 
-                    Subtitle.Text = $"{tenantOption}: {people.Count()} people, {preferences.Count()} prefs. {projectOption}: {tasks.Count()} tasks, {report.Count()} reports";
-
+                    //Subtitle.Text = $"{tenantOption}: {people.Count()} people, {preferences.Count()} prefs. {projectOption}: {tasks.Count()} tasks, {report.Count()} reports";
+                    Subtitle.Text = $"Big data realm opened in {s.ElapsedMilliseconds} ms";
                 }
                 catch (Exception e)
                 {
@@ -166,8 +167,14 @@ namespace App1.Views
                         }
                     case 1:
                         {
+                            Stopwatch sw = new Stopwatch();
+
+                            sw.Start();
                             var surgeryList = SurgeryBusiness.GetSurgeryList(medicalRealm);
-                            TotalEntries.Text = $"Showing {TopX} out of {surgeryList.Count} entries";
+
+                            sw.Stop();
+
+                            TotalEntries.Text = $"Showing {TopX} out of {surgeryList.Count}. Read time: {sw.ElapsedMilliseconds} ms";
                             var firstX = surgeryList.Take(TopX);
                             var displayModels = DisplayModels.GetFrom(firstX);
 
