@@ -6,8 +6,8 @@ using System.Collections.Generic;
 namespace App1.Models
 {
     ////Version description
-    ////Based on v2, applied these modifications:
-    ////- Lines field: changed type from int? to string
+    ////Based on v2, applied these modifications: (destructive changes)
+    ////- Lines field: changed type from int? to string, value gets converted to string
     ////- Patient field: renamed to "Client"
     ////TODO: Update model here
 
