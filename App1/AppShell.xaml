@@ -33,8 +33,8 @@
         <!--<ShellContent Title="About" Icon="icon_about.png" Route="AboutPage" ContentTemplate="{DataTemplate local:AboutPage}" />-->
         <ShellContent Title="Logout" Icon="icon_feed.png" ContentTemplate="{DataTemplate local:ItemsPage}" />
         <!--<ShellContent Title="Join" Icon="icon_feed.png" ContentTemplate="{DataTemplate local:JoinData}" />-->
-        <ShellContent Title="Mix" Icon="icon_feed.png" ContentTemplate="{DataTemplate local:Partitions}" />
-        <ShellContent Title="Surgeries" Icon="icon_about.png" ContentTemplate="{DataTemplate local:SurgeriesPage}" />
+        <ShellContent Title="Surgeries B" Icon="icon_feed.png" ContentTemplate="{DataTemplate local:Partitions}" />
+        <ShellContent Title="Surgeries A" Icon="icon_about.png" ContentTemplate="{DataTemplate local:SurgeriesPage}" />
     </TabBar>
 
     <!--

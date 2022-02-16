@@ -126,48 +126,48 @@ namespace App1.Views
                 s.Stop();
                 Stats.Text = $"Read {surgeries.Count()} surgeries in {s.ElapsedMilliseconds} ms";
 
-                var people = peopleAndPreferencesRealm.All<Person>().ToList();
-                var preferences = peopleAndPreferencesRealm.All<Preference>().ToList();
+                //var people = peopleAndPreferencesRealm.All<Person>().ToList();
+                //var preferences = peopleAndPreferencesRealm.All<Preference>().ToList();
 
-                foreach(var p in preferences) 
-                {
-                    PreferenceItems.Add(new PreferenceDisplayModel(p.Background, p.Font));
-                }
+                //foreach(var p in preferences) 
+                //{
+                //    PreferenceItems.Add(new PreferenceDisplayModel(p.Background, p.Font));
+                //}
 
-                var tasks = tasksAndReportsRealm.All<Models.Task>().ToList();
-                var reports = tasksAndReportsRealm.All<Report>().ToList();
+                //var tasks = tasksAndReportsRealm.All<Models.Task>().ToList();
+                //var reports = tasksAndReportsRealm.All<Report>().ToList();
 
-                PeopleItems = new ObservableCollection<Person>(people);
-                TaskItems = new ObservableCollection<Models.Task>(tasks);
-                ReportItems = new ObservableCollection<Report>(reports);
+                //PeopleItems = new ObservableCollection<Person>(people);
+                //TaskItems = new ObservableCollection<Models.Task>(tasks);
+                //ReportItems = new ObservableCollection<Report>(reports);
                 
                 People.ItemsSource = PeopleItems;
                 Preferences.ItemsSource = PreferenceItems;
                 Tasks.ItemsSource = TaskItems;
                 Reports.ItemsSource = ReportItems;
 
-                PeopleCount.Text = $"People ({people.Count()})";
-                PreferenceCount.Text = $"Preferences ({preferences.Count()})";
+                //PeopleCount.Text = $"People ({people.Count()})";
+                //PreferenceCount.Text = $"Preferences ({preferences.Count()})";
 
-                TasksCount.Text = $"Tasks ({tasks.Count()})";
-                ReportCount.Text = $"Reports ({reports.Count()})";
+                //TasksCount.Text = $"Tasks ({tasks.Count()})";
+                //ReportCount.Text = $"Reports ({reports.Count()})";
 
-                int totalStatuses = 0;
-                if (tasks.Count() > 0) 
-                {
-                    foreach(var task in tasks) 
-                    {
-                        var syncConfigStatus = new SyncConfiguration("task="+task.Id, RealmApp.CurrentUser);
-                        var statusRealm = await Realm.GetInstanceAsync(syncConfigStatus);
-                        var status = statusRealm.All<Status>();
+                //int totalStatuses = 0;
+                //if (tasks.Count() > 0) 
+                //{
+                //    foreach(var task in tasks) 
+                //    {
+                //        var syncConfigStatus = new SyncConfiguration("task="+task.Id, RealmApp.CurrentUser);
+                //        var statusRealm = await Realm.GetInstanceAsync(syncConfigStatus);
+                //        var status = statusRealm.All<Status>();
 
-                        totalStatuses += status.Count(); //should always be 1 per task
+                //        totalStatuses += status.Count(); //should always be 1 per task
 
-                        statusRealm.Dispose();
-                    }
+                //        statusRealm.Dispose();
+                //    }
 
-                    TasksCount.Text += $" - with {totalStatuses} statuses found.";
-                }
+                //    TasksCount.Text += $" - with {totalStatuses} statuses found.";
+                //}
 
             }
             catch (Exception e)
