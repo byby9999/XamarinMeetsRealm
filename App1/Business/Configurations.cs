@@ -6,7 +6,7 @@ namespace App1.Business
 {
     public static class Configurations
     {
-        public const string  ChesterAccount_DefaultOrg_Project0_MyApp = "myapp-nktiq";
+        public const string  ChesterAccount_DefaultOrg_Project0_MyApp = "";
 
         public static Dictionary<string, string> UserPartitions = new Dictionary<string, string>()
         {
