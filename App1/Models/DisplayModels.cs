@@ -9,37 +9,37 @@ namespace App1.Models
     {
         public static List<Surgery> GetFrom(IEnumerable<Surgery_v2> list)
         {
-            return list.Select(x =>
+            return list.Select(s =>
                 new Surgery
                 {
-                    Id = x.Id,
+                    Id = s.Id,
                     Surgeon = new Surgery_Surgeon
                     {
-                        FirstName = x.Surgeon.FirstName,
-                        LastName = x.Surgeon.LastName,
-                        Title = x.Surgeon.Title,
-                        Code = x.Surgeon.Code
+                        FirstName = s.Surgeon.FirstName,
+                        LastName = s.Surgeon.LastName,
+                        Title = s.Surgeon.Title,
+                        Code = s.Surgeon.Code
                     },
-                    Procedure = new Surgery_Procedure(x.Procedure.Code, x.Procedure.Name),
-                    Extra = string.IsNullOrEmpty(x.Message) ? " " : "M"
+                    Procedure = new Surgery_Procedure(s.Procedure.Code, s.Procedure.Name),
+                    Extra = s.V.HasValue ? s.V.Value.ToString() : s.Message.Substring(0, 3) + "..."
                 }).ToList();
         }
 
         public static List<Surgery> GetFrom(IEnumerable<Surgery_v3> list)
         {
-            return list.Select(x =>
+            return list.Select(s =>
                 new Surgery
                 {
-                    Id = x.Id,
+                    Id = s.Id,
                     Surgeon = new Surgery_Surgeon
                     {
-                        FirstName = x.Surgeon.FirstName,
-                        LastName = x.Surgeon.LastName,
-                        Title = x.Surgeon.Title,
-                        Code = x.Surgeon.Code
+                        FirstName = s.Surgeon.FirstName,
+                        LastName = s.Surgeon.LastName,
+                        Title = s.Surgeon.Title,
+                        Code = s.Surgeon.Code
                     },
-                    Procedure = new Surgery_Procedure(x.Procedure.Code, x.Procedure.Name),
-                    Extra = string.IsNullOrEmpty(x.Message) ? " " : "M"
+                    Procedure = new Surgery_Procedure(s.Procedure.Code, s.Procedure.Name),
+                    Extra = s.V.HasValue ? s.V.Value.ToString() : s.Message.Substring(0, 3) + "..."
                 }).ToList();
         }
 
@@ -60,7 +60,7 @@ namespace App1.Models
                     },
                     Procedure = new Surgery_Procedure(s.Procedure.Code, s.Procedure.Name)
                 };
-                displayItem.Extra = s.V.HasValue ? s.V.ToString() : " ";
+                displayItem.Extra = s.V.HasValue ? s.V.Value.ToString() : "1";
 
                 result.Add(displayItem);
             }

@@ -5,11 +5,11 @@ using System.Collections.Generic;
 
 namespace App1.Models
 {
-    ////Version description
-    ////Based on v2, applied these modifications: (destructive changes)
-    ////- Lines field: changed type from int? to string, value gets converted to string
-    ////- Patient field: renamed to "Client"
-    ////TODO: Update model here
+    //Version description
+    //Based on v2, applied these modifications: (destructive changes)
+    //- Lines field: changed type from int? to string, value gets converted to string
+    //- Patient field: renamed to "Client"
+    //TODO: Update model here
 
     public class Surgery_v3 : RealmObject
     {
@@ -27,11 +27,17 @@ namespace App1.Models
         public IList<Surgery_v3_SurgeryStaffs> SurgeryStaffs { get; }
         public Surgery_v3_Theatre Theatre { get; set; }
         public double? TheatreTotalCost { get; set; }
+
         [MapTo("_partition")]
         [Required]
         public string Partition { get; set; }
+
         [MapTo("message")]
         public string Message { get; set; }
+
+        [MapTo("v")]
+        public int? V { get; set; }
+
         public Surgery_v3()
         {
 
@@ -49,7 +55,6 @@ namespace App1.Models
             Theatre = new Surgery_v3_Theatre { Code = "X1", Description = "Test" };
             Surgeon = new Surgery_v3_Surgeon { LastName = "Abraham", FirstName = "Alex", Code = "xxx.x/x-x_x", Title = "Mr" };
         }
-        
     }
 
     public class Surgery_v3_BodySide : EmbeddedObject
@@ -79,7 +84,7 @@ namespace App1.Models
         public Surgery_v3_Procedure(string code, string name)
         {
             this.Code = code;
-            this.Name = name;   
+            this.Name = name;
         }
     }
 

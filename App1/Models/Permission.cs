@@ -6,7 +6,7 @@ using System.Text;
 
 namespace App1.Models
 {
-    public class Status //: RealmObject
+    public class Permission : RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
@@ -16,7 +16,13 @@ namespace App1.Models
         [Required]
         public string Partition { get; set; }
 
-        [MapTo("description")]
-        public string Description { get; set; }
+        [MapTo("canRead")]
+        public string CanRead { get; set; }
+
+        [MapTo("canWrite")]
+        public string CanWrite { get; set; }
+
+        [MapTo("userid")]
+        public string Userid { get; set; }
     }
 }

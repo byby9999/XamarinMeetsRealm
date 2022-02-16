@@ -23,14 +23,13 @@ namespace App1.Models
         public Surgery_v2_Theatre Theatre { get; set; }
         public double? TheatreTotalCost { get; set; }
         public double? TheatreTotalcost { get; set; }
-
         [MapTo("_partition")]
         [Required]
         public string Partition { get; set; }
-
         [MapTo("message")]
         public string Message { get; set; }
-
+        [MapTo("v")]
+        public int? V { get; set; }
         public Surgery_v2()
         {
             Id = ObjectId.GenerateNewId();

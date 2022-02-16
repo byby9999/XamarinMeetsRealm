@@ -6,7 +6,7 @@ using System.Text;
 
 namespace App1.Models
 {
-    public class Report : RealmObject
+    public class Report //: RealmObject
     {
         [PrimaryKey]
         [MapTo("_id")]
