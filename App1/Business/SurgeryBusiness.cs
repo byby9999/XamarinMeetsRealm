@@ -5,13 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using static App1.Business.Configurations;
 
 namespace App1.Business
 {
-    public static class SurgeryBusiness 
+    public static class SurgeryBusiness
     {
         //these do not support .Take(x)
-        public static List<Surgery> GetSurgeryList(this Realm realm) 
+        public static List<Surgery> GetSurgeryList(this Realm realm)
         {
             return realm.All<Surgery>().OrderBy(s => s.Surgeon.LastName).ToList();
         }
@@ -24,7 +25,10 @@ namespace App1.Business
         {
             return realm.All<Surgery_v3>().OrderBy(s => s.Surgeon.LastName).ToList();
         }
-
+        public static List<SurgeryGlobal> GetSurgeryList_SchemaVersionPattern(this Realm realm, int version)
+        {
+            return realm.All<SurgeryGlobal>().Where(s => s.V == version).OrderBy(s => s.Surgeon.LastName).ToList();
+        }
         public static int CountSurgeries(this Realm realm, int version)
         {
             switch (version)
@@ -41,44 +45,52 @@ namespace App1.Business
                 default:
                     throw new Exception("Data version not supported.");
 
-
             }
         }
-        public static List<Surgery> GetDisplayModels(this Realm medicalRealm, int version = 1)
+        public static List<Surgery> GetDisplayModels(this Realm medicalRealm, Mode mode = Mode.PartnerCollections, int version = 1)
         {
-            List<Surgery> displayModels;
-            switch (version)
+            List<Surgery> displayModels = new List<Surgery>();
+            if (mode == Mode.PartnerCollections) 
             {
-                case 3:
-                    {
-                        var surgeryListV3 = medicalRealm.GetSurgeryList_v3();
-                        displayModels = DisplayModels.GetFrom(surgeryListV3);
+                switch (version)
+                {
+                    case 3:
+                        {
+                            var surgeryListV3 = medicalRealm.GetSurgeryList_v3();
+                            displayModels = DisplayModels.GetFrom(surgeryListV3);
 
-                        break;
-                    }
-                case 2:
-                    {
-                        var surgeryListV2 = medicalRealm.GetSurgeryList_v2();
-                        displayModels = DisplayModels.GetFrom(surgeryListV2);
+                            break;
+                        }
+                    case 2:
+                        {
+                            var surgeryListV2 = medicalRealm.GetSurgeryList_v2();
+                            displayModels = DisplayModels.GetFrom(surgeryListV2);
 
-                        break;
-                    }
-                case 1:
-                    {
-                        var surgeryList = medicalRealm.GetSurgeryList();
-                        displayModels = DisplayModels.GetFrom(surgeryList);
+                            break;
+                        }
+                    case 1:
+                        {
+                            var surgeryList = medicalRealm.GetSurgeryList();
+                            displayModels = DisplayModels.GetFrom(surgeryList);
 
-                        break;
-                    }
+                            break;
+                        }
+                    
+                    default:
+                        throw new Exception("Data version not supported.");
+                }
+            }
 
-                default:
-                    throw new Exception("Data version not supported.");
+            if (mode == Mode.SchemaVersionPattern)
+            {
+                var surgeryList = medicalRealm.GetSurgeryList_SchemaVersionPattern(version);
+                displayModels = DisplayModels.GetFrom(surgeryList);          
             }
 
             return displayModels.ToList();
         }
 
-        public static void RemoveSurgery(this Realm realm, ObjectId objectId, int version = 1) 
+        public static void RemoveSurgery(this Realm realm, ObjectId objectId, int version = 1)
         {
             switch (version)
             {
@@ -147,7 +159,7 @@ namespace App1.Business
                     {
                         var procedure = surgery2.Procedure;
                         var newProcedure = new Surgery_v2_Procedure(procedure.Code, newName);
-                        
+
                         realm.Write(() =>
                         {
                             surgery2.Procedure = newProcedure;
@@ -160,7 +172,7 @@ namespace App1.Business
                     {
                         var procedure = surgery.Procedure;
                         var newProcedure = new Surgery_Procedure(procedure.Code, newName);
-                        
+
                         realm.Write(() =>
                         {
                             surgery.Procedure = newProcedure;
@@ -173,7 +185,34 @@ namespace App1.Business
             }
         }
 
-        public static void AddSurgery(this Realm realm, string name, string partition, int version = 1) 
+        public static void EditSurgery_SchemaVersionPattern(this Realm realm, ObjectId objectId, string newName)
+        {
+            var surgery = realm.Find<SurgeryGlobal>(objectId);
+            if (surgery != null)
+            {
+                var procedure = surgery.Procedure;
+                var newProcedure = new SurgeryGlobal_Procedure(procedure.Code, newName);
+
+                realm.Write(() =>
+                {
+                    surgery.Procedure = newProcedure;
+                });
+            } 
+        }
+
+        public static void RemoveSurgery_SchemaVersionPattern(this Realm realm, ObjectId objectId)
+        {
+            var surgeryToRemove = realm.Find<SurgeryGlobal>(objectId);
+            if (surgeryToRemove != null)
+            {
+                realm.Write(() =>
+                {
+                    realm.Remove(surgeryToRemove);
+                });
+            }
+        }
+
+        public static void AddSurgery(this Realm realm, string name, string partition, int version = 1)
         {
             switch (version)
             {
@@ -207,7 +246,7 @@ namespace App1.Business
             }
         }
 
-        public static string RandomName() 
+        public static string RandomName()
         {
             Random r = new Random();
             string letters = "abcdefghijklmnopqrstuvwxyz";

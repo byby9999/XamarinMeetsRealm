@@ -19,14 +19,22 @@ namespace App1.Business
 
         public static string DefaultPartition = UserPartitions.Keys.ElementAt(0);
 
-        public static Dictionary<string, int> UsersDataVersionsMap = new Dictionary<string, int>()
+        public static Dictionary<string, int> DataVersionsMap_Partner = new Dictionary<string, int>()
         {
             { "61c058e5559668e69ad62a8d", 1 },
             { "61c066a7559668e69ad78346", 1 },
             { "61c084f8f89724893240b892", 1 },
             { "61c08508c0a82d01340e0458", 1 }
         };
-       
+
+        public static Dictionary<string, int> DataVersionsMap_SchemaV = new Dictionary<string, int>()
+        {
+            { "61c058e5559668e69ad62a8d", 1 },
+            { "61c066a7559668e69ad78346", 2 },
+            { "61c084f8f89724893240b892", 3 },
+            { "61c08508c0a82d01340e0458", 1 }
+        };
+
         /// Set this value as the Maximum data version available for all clients. 
         /// If a client's CurrentDataVersion < MaxVersionToUpgrade, client will see a button to "Update".
         /// The Update process will move the client to data version = MaxVersionToUpgrade
@@ -34,5 +42,11 @@ namespace App1.Business
         /// and client chooses "Update", they will update directly from 1 to 3, skipping version 2.
         /// This way, we can ensure clients only update to latest versions available.
         public const int MaxVersionToUpgrade = 3;
+
+        public enum Mode 
+        { 
+            PartnerCollections,
+            SchemaVersionPattern
+        }
     }
 }

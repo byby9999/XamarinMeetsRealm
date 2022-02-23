@@ -67,6 +67,24 @@ namespace App1.Models
                     Extra = s.V.HasValue ? s.V.Value.ToString() : "3"
                 }).ToList();
         }
+
+        public static List<Surgery> GetFrom(IEnumerable<SurgeryGlobal> list)
+        {
+            return list.Select(s =>
+                new Surgery
+                {
+                    Id = s.Id,
+                    Surgeon = new Surgery_Surgeon
+                    {
+                        FirstName = s.Surgeon.FirstName,
+                        LastName = s.Surgeon.LastName,
+                        Title = s.Surgeon.Title,
+                        Code = s.Surgeon.Code
+                    },
+                    Procedure = new Surgery_Procedure(s.Procedure.Code, s.Procedure.Name),
+                    Extra = s.V.HasValue ? s.V.Value.ToString() : "G"
+                }).ToList();
+        }
     }
 
 
