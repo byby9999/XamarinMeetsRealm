@@ -4,10 +4,9 @@
              x:Class="App1.Views.Partitions">
     <ContentPage.Content>
         <StackLayout>
-            <ProgressBar x:Name="LoadProgress" ProgressColor="MediumPurple" />
             <!-- Place new controls here -->
             <Label x:Name="LoggedIn" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Title" TextColor="Red" />
-            <Label x:Name="RealmsChosen" HorizontalOptions="EndAndExpand" FontSize="Medium" TextColor="RoyalBlue"></Label>
+            <Label x:Name="Subtitle" HorizontalOptions="Center" FontSize="Medium" TextColor="RoyalBlue"></Label>
 
             <ListView x:Name="MySurgeries" ItemsSource="{Binding Items}" CachingStrategy="RecycleElement">
                 <ListView.ItemTemplate>
@@ -17,13 +16,18 @@
                                 <Label Text="{Binding Procedure.Name, Mode=TwoWay}" WidthRequest="300" Style="{DynamicResource ListItemTextStyle}" />
                                 <Label Text="{Binding SurgeonFullName}"  WidthRequest="100" TextColor="Blue"></Label>
                                 <Label WidthRequest="20" Text="{Binding Extra}" TextColor="LimeGreen" FontSize="Small"></Label>
-
+                                
+                                <ImageButton x:Name="updateButton" BackgroundColor="Transparent" Source="edit.png" 
+                                    CommandParameter="{Binding Id}" Clicked="editButton_Clicked" WidthRequest="40"/>
+                                <ImageButton x:Name="removeButton" BackgroundColor="Transparent" Source="delete.png"
+                                    CommandParameter="{Binding Id}" Clicked="removeButton_Clicked" WidthRequest="40"/>
                             </StackLayout>
                         </ViewCell>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Label x:Name="Stats"></Label>
+            <Button x:Name="addButton" Text="+ surgery" BackgroundColor="#3DD49B" HorizontalOptions="Center" TextColor="White" Clicked="addButton_Clicked"></Button>
+            <Label x:Name="Stats" FontSize="Small" TextColor="Coral"></Label>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

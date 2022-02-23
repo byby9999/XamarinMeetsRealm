@@ -246,6 +246,16 @@ namespace App1.Business
             }
         }
 
+        public static void AddSurgery_SchemaVersionPattern(this Realm realm, string name, string partition, int version = 1) 
+        {
+            var surgeryGlobal = new SurgeryGlobal(name, partition, version);
+
+            realm.Write(() =>
+            {
+                realm.Add(surgeryGlobal);
+            });
+        }
+
         public static string RandomName()
         {
             Random r = new Random();

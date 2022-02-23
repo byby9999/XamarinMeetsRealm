@@ -28,9 +28,9 @@
                 </ListView.ItemTemplate>
             </ListView>
             <Label x:Name="TotalEntries" FontSize="Small" TextColor="Coral"></Label>
-            <Button x:Name="addButton" Text="+ Surgery" BackgroundColor="#3DD49B" TextColor="White" Clicked="addButton_Clicked"></Button>
-            <Button x:Name="UpdateVersion" IsVisible="False" Text="Update to Latest version: 3!" 
-                    TextColor="White" BackgroundColor="OrangeRed" Clicked="updateVersionButton_Clicked"></Button> 
+            <Button x:Name="addButton" Text="+ Surgery" BackgroundColor="#3DD49B" HorizontalOptions="Center" TextColor="White" Clicked="addButton_Clicked"></Button>
+            <Button x:Name="UpdateVersion" IsVisible="False" Text="Update to V 3" HorizontalOptions="Center"
+                    TextColor="White" BackgroundColor="Orange" FontSize="Small" Clicked="updateVersionButton_Clicked"></Button> 
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

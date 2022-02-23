@@ -13,6 +13,7 @@ using AsyncTask = System.Threading.Tasks.Task;
 using App1.Business;
 using System.Diagnostics;
 using System.Collections.Generic;
+using static App1.Business.Configurations;
 
 namespace App1.Views 
 {
@@ -69,7 +70,7 @@ namespace App1.Views
             string userEmail = Configurations.UserPartitions[userChosen];
             string pass = userEmail.Split(new char[] { '@' })[0];
 
-            CurrentDataVersion = Configurations.UsersDataVersionsMap[userChosen];
+            CurrentDataVersion = Configurations.DataVersionsMap_Partner[userChosen];
 
             //await DisplayActionSheet("Choose a person:", "Cancel", null, "tenant=1", "tenant=2", "tenant=3");
             //await DisplayActionSheet("Choose a project:", "Cancel", null, "project=A", "project=B", "project=C");
@@ -120,7 +121,7 @@ namespace App1.Views
         {
             try
             {
-                var displayModels = medicalRealm.GetDisplayModels(dataVersion);
+                var displayModels = medicalRealm.GetDisplayModels(Mode.PartnerCollections, dataVersion);
 
                 var totalCount = medicalRealm.CountSurgeries(dataVersion);
 
@@ -141,10 +142,10 @@ namespace App1.Views
 
                 Subtitle.Text = $"Data version: {CurrentDataVersion}";
 
-                if (CurrentDataVersion < Configurations.MaxVersionToUpgrade)
+                if (CurrentDataVersion < MaxVersionToUpgrade)
                 {
                     UpdateVersion.IsVisible = true;
-                    UpdateVersion.Text = $"Update to version: {Configurations.MaxVersionToUpgrade}";
+                    UpdateVersion.Text = $"Update v: {MaxVersionToUpgrade}";
                 }
                 else 
                 {
@@ -216,7 +217,7 @@ namespace App1.Views
         {
             CurrentDataVersion = Configurations.MaxVersionToUpgrade;
 
-            Configurations.UsersDataVersionsMap[RealmApp.CurrentUser.Profile.Email] = Configurations.MaxVersionToUpgrade;
+            Configurations.DataVersionsMap_Partner[RealmApp.CurrentUser.Profile.Email] = Configurations.MaxVersionToUpgrade;
 
             await PopulateItemsList(CurrentDataVersion);
         }

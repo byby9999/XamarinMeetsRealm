@@ -1,5 +1,6 @@
 ﻿using App1.Business;
 using App1.Models;
+using MongoDB.Bson;
 using Realms;
 using Realms.Sync;
 using System;
@@ -9,7 +10,7 @@ using System.Linq;
 
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-
+using static App1.Business.Configurations;
 using AsyncTask = System.Threading.Tasks.Task;
 
 namespace App1.Views
@@ -29,6 +30,7 @@ namespace App1.Views
 
         public static int TopX = 10;
 
+        public static int Version = 1;
         public ObservableCollection<Surgery> Items { get; set; }
 
         public Partitions()
@@ -42,7 +44,7 @@ namespace App1.Views
             {
                 if (RealmApp == null) 
                 {
-                    RealmApp = Realms.Sync.App.Create(Configurations.ChesterAccount_ChesterOrg_Project0_MyApp);
+                    RealmApp = Realms.Sync.App.Create(ChesterAccount_ChesterOrg_Project0_MyApp);
                 }
             } 
             catch(Exception e) 
@@ -53,43 +55,35 @@ namespace App1.Views
 
         protected override async void OnAppearing()
         {
-            string choice = await DisplayActionSheet("Login to App as:", "Cancel", null,
-                Configurations.UserPartitions.Keys.ElementAt(0),
-                Configurations.UserPartitions.Keys.ElementAt(1),
-                Configurations.UserPartitions.Keys.ElementAt(2),
-                Configurations.UserPartitions.Keys.ElementAt(3));
+            string userId = await DisplayActionSheet("Login to App as:", "Cancel", null,
+                UserPartitions.Keys.ElementAt(0),
+                UserPartitions.Keys.ElementAt(1),
+                UserPartitions.Keys.ElementAt(2),
+                UserPartitions.Keys.ElementAt(3));
 
-            string email = Configurations.UserPartitions[choice];
+            string email = Configurations.UserPartitions[userId];
             string pass = email.Split(new char[] { '@' })[0];
-
-            //string option1 = await DisplayActionSheet("Choose first partition:", "Cancel", null,
-            //    "tenant=1", "tenant=2", "tenant=3");
-
-            //string option2 = await DisplayActionSheet("Choose second partition:", "cancel", null, 
-            //    "project=A", "project=B", "project=C");
-            string option1 = "tenant=1";
-            string option2 = "project=B";
 
             if (RealmApp == null) 
             {
-                RealmApp = Realms.Sync.App.Create(Configurations.ChesterAccount_ChesterOrg_Project0_MyApp);
+                RealmApp = Realms.Sync.App.Create(ChesterAccount_ChesterOrg_Project0_MyApp);
             }
 
             //this sets a value to RealmApp.CurrentUser:
-            var user = await RealmApp.LogInAsync(Credentials.EmailPassword(email, pass));
+            await RealmApp.LogInAsync(Credentials.EmailPassword(email, pass));
 
-            LoggedIn.Text = choice;
-            RealmsChosen.Text = $"{option1}, {option2}";
+            LoggedIn.Text = userId;
 
-            //TenantPartition = option1;
-            //ProjectPartition = option2;
+            Version = DataVersionsMap_SchemaV[userId];
+
+            Subtitle.Text = $"* Schema version pattern * Version: {Version}";
 
             AppUserPartition = RealmApp.CurrentUser.Id;
-            
-            await PopulateItemsList(option1, option2);
+
+            await PopulateItemsList();
         }
 
-        private async AsyncTask PopulateItemsList(string partition1, string partition2)
+        private async AsyncTask PopulateItemsList()
         {
             SyncConfiguration syncConfigMedical = new SyncConfiguration(AppUserPartition, RealmApp.CurrentUser);
             
@@ -99,16 +93,16 @@ namespace App1.Views
                 
                 Stopwatch s = new Stopwatch();
                 s.Start();
-                var surgeries = medicalRealm.All<Surgery>();
+
+                var displayModels = medicalRealm.GetDisplayModels(Mode.SchemaVersionPattern, Version);
+
                 s.Stop();
-                Stats.Text = $"Read {surgeries.Count()} surgeries in {s.ElapsedMilliseconds} ms";
 
-                var displayModels = medicalRealm.GetDisplayModels(1);
-                var totalCount = medicalRealm.CountSurgeries(1);
+                Stats.Text = $"Read {displayModels.Count()} objects in {s.ElapsedMilliseconds} ms. Showing only top {TopX}.";
 
-                string message = $"Showing {TopX} / {totalCount}.";
+                var firstX = displayModels.Take(TopX).ToList();
 
-                var observableList = new ObservableCollection<Surgery>(displayModels);
+                var observableList = new ObservableCollection<Surgery>(firstX);
                 Items = observableList;
                 MySurgeries.ItemsSource = Items;
             }
@@ -128,11 +122,60 @@ namespace App1.Views
             AppUserPartition = string.Empty;
             TenantPartition = string.Empty;
             ProjectPartition = string.Empty;
+        }
+        private async void editButton_Clicked(object sender, EventArgs e)
+        {
+            var button = (ImageButton)sender;
+            var entityId = button.CommandParameter.ToString();
+            var objectId = new ObjectId(entityId);
+            string newName = await DisplayPromptAsync("Edit Surgery", "New Procedure Name:", initialValue: "edit_");
 
-            //People.ItemsSource = null;
-            //Preferences.ItemsSource = null;
-            //Tasks.ItemsSource = null;
-            //Reports.ItemsSource = null;
+            medicalRealm.EditSurgery_SchemaVersionPattern(objectId, newName);
+
+            var listViewItem = Items.FirstOrDefault(i => i.Id.Equals(objectId));
+            if (listViewItem != null && !listViewItem.Procedure.Name.Equals(newName))
+            {
+                listViewItem.Procedure.Name = newName;
+                MySurgeries.ItemsSource = Items;
+            }
+        }
+        private async void removeButton_Clicked(object sender, EventArgs e)
+        {
+            var confirm = await DisplayAlert("Are you sure?", "You are about to delete the object. Are you sure?", "Yes", "No");
+            if (!confirm)
+                return;
+
+            var button = (ImageButton)sender;
+            var entityId = button.CommandParameter.ToString();
+            var objectId = new ObjectId(entityId);
+
+            medicalRealm.RemoveSurgery_SchemaVersionPattern(objectId);
+
+            var toRemoveFromListView = Items.FirstOrDefault(i => i.Id.HasValue && i.Id.Equals(objectId));
+            if (toRemoveFromListView != null)
+            {
+                Items.Remove(toRemoveFromListView);
+                MySurgeries.ItemsSource = Items;
+            }
+        }
+        private async void addButton_Clicked(object sender, EventArgs e)
+        {
+            string name = await DisplayPromptAsync("New Surgery Details", "Enter procedure name here", 
+                initialValue: SurgeryBusiness.RandomName());
+
+            if (name == null)
+                return;
+
+            try
+            {
+                medicalRealm.AddSurgery_SchemaVersionPattern(name, AppUserPartition, Version);
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Error", ex.Message, "ok");
+            }
+
+            await PopulateItemsList();
         }
 
         public void OtherRealms()
@@ -143,7 +186,11 @@ namespace App1.Views
             //tasksAndReportsRealm = await Realm.GetInstanceAsync(syncConfig2);
             //var people = peopleAndPreferencesRealm.All<Person>().ToList();
             //var preferences = peopleAndPreferencesRealm.All<Preference>().ToList();
+            //string option1 = await DisplayActionSheet("Choose first partition:", "Cancel", null,
+            //    "tenant=1", "tenant=2", "tenant=3");
 
+            //string option2 = await DisplayActionSheet("Choose second partition:", "cancel", null, 
+            //    "project=A", "project=B", "project=C");
             //foreach(var p in preferences) 
             //{
             //    PreferenceItems.Add(new PreferenceDisplayModel(p.Background, p.Font));
@@ -183,6 +230,11 @@ namespace App1.Views
             //Reports.ItemsSource = ReportItems;
             //peopleAndPreferencesRealm.Dispose();
             //tasksAndReportsRealm.Dispose();
+
+            //People.ItemsSource = null;
+            //Preferences.ItemsSource = null;
+            //Tasks.ItemsSource = null;
+            //Reports.ItemsSource = null;
         }
     }
 }

@@ -16,6 +16,9 @@ namespace App1.Models
         public string Duration { get; set; }
 
         public int? Lines { get; set; }
+        public string LinesStr { get; set; }
+
+        public SurgeryGlobal_Client Client { get; set; }
 
         public SurgeryGlobal_Patient Patient { get; set; }
 
@@ -37,8 +40,45 @@ namespace App1.Models
         [Required]
         public string Partition { get; set; }
 
+        [MapTo("message")]
+        public string Message { get; set; }
+
         [MapTo("v")]
         public int? V { get; set; }
+
+        public SurgeryGlobal()
+        {
+        }
+        public SurgeryGlobal(string name, string partition, int v)
+        {
+            Id = ObjectId.GenerateNewId();
+            Procedure = new SurgeryGlobal_Procedure("Code_124", name);
+            BodySide = new SurgeryGlobal_BodySide { Code = "L", Description = "body-side-code" };
+            Lines = 4;
+            Patient = new SurgeryGlobal_Patient { PatientIdentificationNumber = "ASDF" };
+            Reference = "R_" + name;
+            Partition = partition;
+            TheatreTotalCost = 231;
+            Theatre = new SurgeryGlobal_Theatre { Code = "X1", Description = "Test" };
+            Surgeon = new SurgeryGlobal_Surgeon { LastName = "Abraham", FirstName = "Alex", Code = "xxx.x/x-x_x", Title = "Mr" };
+            V = v;
+            if (v == 1)
+            {
+                Duration = "01:23:45";
+            }
+            if (v == 2)
+            {
+                Message = "hi from C#";
+                Duration = null;
+            }
+            if (v == 3) 
+            {
+                LinesStr = "3";
+                Lines = null;
+                Client = new SurgeryGlobal_Client { PatientIdentificationNumber = "PAT_123" };
+                Patient = null;
+            }
+        }
     }
 
     public class SurgeryGlobal_BodySide : EmbeddedObject
@@ -99,5 +139,9 @@ namespace App1.Models
     {
         public string Code { get; set; }
         public string Description { get; set; }
+    }
+    public class SurgeryGlobal_Client : EmbeddedObject
+    {
+        public string PatientIdentificationNumber { get; set; }
     }
 }
