@@ -12,7 +12,6 @@ using Xamarin.Forms.Xaml;
 using AsyncTask = System.Threading.Tasks.Task;
 using App1.Business;
 using System.Diagnostics;
-using System.Collections.Generic;
 using static App1.Business.Configurations;
 
 namespace App1.Views 
@@ -33,7 +32,7 @@ namespace App1.Views
         public static int CurrentDataVersion = 1;
         public static int TopX = 10;
 
-        public static string RealmAppId = Configurations.ChesterAccount_ChesterOrg_Project0_MyApp;
+        public static string RealmAppId = Alex_AlexandraOrg_Project0_MyApp1;
 
         public ObservableCollection<Surgery> Items { get; set; }
 
@@ -59,18 +58,18 @@ namespace App1.Views
         protected override async void OnAppearing()
         {
             string userChosen = await DisplayActionSheet("Login as:", "Cancel", null,
-                Configurations.UserPartitions.Keys.ElementAt(0),
-                Configurations.UserPartitions.Keys.ElementAt(1),
-                Configurations.UserPartitions.Keys.ElementAt(2),
-                Configurations.UserPartitions.Keys.ElementAt(3));
+                Alex.UserPartitions.Keys.ElementAt(0),
+                Alex.UserPartitions.Keys.ElementAt(1),
+                Alex.UserPartitions.Keys.ElementAt(2),
+                Alex.UserPartitions.Keys.ElementAt(3));
 
             if (userChosen == null)
                 return;
 
-            string userEmail = Configurations.UserPartitions[userChosen];
+            string userEmail = Alex.UserPartitions[userChosen];
             string pass = userEmail.Split(new char[] { '@' })[0];
 
-            CurrentDataVersion = Configurations.DataVersionsMap_Partner[userChosen];
+            CurrentDataVersion = Alex.DataVersionsMap_Partner[userChosen];
 
             //await DisplayActionSheet("Choose a person:", "Cancel", null, "tenant=1", "tenant=2", "tenant=3");
             //await DisplayActionSheet("Choose a project:", "Cancel", null, "project=A", "project=B", "project=C");
@@ -215,9 +214,9 @@ namespace App1.Views
 
         private async void updateVersionButton_Clicked(object sender, EventArgs e) 
         {
-            CurrentDataVersion = Configurations.MaxVersionToUpgrade;
+            CurrentDataVersion = MaxVersionToUpgrade;
 
-            Configurations.DataVersionsMap_Partner[RealmApp.CurrentUser.Profile.Email] = Configurations.MaxVersionToUpgrade;
+            Alex.DataVersionsMap_Partner[RealmApp.CurrentUser.Profile.Email] = MaxVersionToUpgrade;
 
             await PopulateItemsList(CurrentDataVersion);
         }

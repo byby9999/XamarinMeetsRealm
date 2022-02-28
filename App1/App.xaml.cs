@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
+using static App1.Business.Configurations;
 
 namespace App1
 {
@@ -18,12 +19,12 @@ namespace App1
 
         public static Realm medicalRealm;
 
-        public static string AppUserPartition = Configurations.DefaultPartition;
+        public static string AppUserPartition = Chester.DefaultPartition;
 
         public static int CurrentDataVersion = 1;
         public static int TopX = 20;
 
-        public static string RealmAppId = Configurations.ChesterAccount_ChesterOrg_Project0_MyApp;
+        //public static string RealmAppId = Configurations.ChesterAccount_ChesterOrg_Project0_MyApp;
 
         public ObservableCollection<Surgery> Items { get; set; }
 

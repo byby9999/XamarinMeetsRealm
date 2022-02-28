@@ -44,7 +44,7 @@ namespace App1.Views
             {
                 if (RealmApp == null) 
                 {
-                    RealmApp = Realms.Sync.App.Create(ChesterAccount_ChesterOrg_Project0_MyApp);
+                    RealmApp = Realms.Sync.App.Create(Chester_ChesterOrg_Project0_MyApp);
                 }
             } 
             catch(Exception e) 
@@ -56,17 +56,17 @@ namespace App1.Views
         protected override async void OnAppearing()
         {
             string userId = await DisplayActionSheet("Login to App as:", "Cancel", null,
-                UserPartitions.Keys.ElementAt(0),
-                UserPartitions.Keys.ElementAt(1),
-                UserPartitions.Keys.ElementAt(2),
-                UserPartitions.Keys.ElementAt(3));
+                Chester.UserPartitions.Keys.ElementAt(0),
+                Chester.UserPartitions.Keys.ElementAt(1),
+                Chester.UserPartitions.Keys.ElementAt(2),
+                Chester.UserPartitions.Keys.ElementAt(3));
 
-            string email = Configurations.UserPartitions[userId];
+            string email = Chester.UserPartitions[userId];
             string pass = email.Split(new char[] { '@' })[0];
 
             if (RealmApp == null) 
             {
-                RealmApp = Realms.Sync.App.Create(ChesterAccount_ChesterOrg_Project0_MyApp);
+                RealmApp = Realms.Sync.App.Create(Chester_ChesterOrg_Project0_MyApp);
             }
 
             //this sets a value to RealmApp.CurrentUser:
@@ -74,7 +74,7 @@ namespace App1.Views
 
             LoggedIn.Text = userId;
 
-            Version = DataVersionsMap_SchemaV[userId];
+            Version = Chester.DataVersionsMap_SchemaV[userId];
 
             Subtitle.Text = $"* Schema version pattern * Version: {Version}";
 

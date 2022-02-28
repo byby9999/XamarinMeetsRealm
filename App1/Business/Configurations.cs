@@ -7,33 +7,9 @@ namespace App1.Business
 {
     public static class Configurations
     {
-        public const string  ChesterAccount_ChesterOrg_Project0_MyApp = "";
+        public const string  Chester_ChesterOrg_Project0_MyApp = "";
 
-        public static Dictionary<string, string> UserPartitions = new Dictionary<string, string>()
-        {
-            { "61c058e5559668e69ad62a8d", "test12@example.com" },
-            { "61c066a7559668e69ad78346", "test34@example.com" },
-            { "61c084f8f89724893240b892", "test56@example.com" },
-            { "61c08508c0a82d01340e0458", "test78@example.com" }
-        };
-
-        public static string DefaultPartition = UserPartitions.Keys.ElementAt(0);
-
-        public static Dictionary<string, int> DataVersionsMap_Partner = new Dictionary<string, int>()
-        {
-            { "61c058e5559668e69ad62a8d", 1 },
-            { "61c066a7559668e69ad78346", 1 },
-            { "61c084f8f89724893240b892", 1 },
-            { "61c08508c0a82d01340e0458", 1 }
-        };
-
-        public static Dictionary<string, int> DataVersionsMap_SchemaV = new Dictionary<string, int>()
-        {
-            { "61c058e5559668e69ad62a8d", 1 },
-            { "61c066a7559668e69ad78346", 2 },
-            { "61c084f8f89724893240b892", 3 },
-            { "61c08508c0a82d01340e0458", 1 }
-        };
+        public const string Alex_AlexandraOrg_Project0_MyApp1 = "";
 
         /// Set this value as the Maximum data version available for all clients. 
         /// If a client's CurrentDataVersion < MaxVersionToUpgrade, client will see a button to "Update".
@@ -47,6 +23,57 @@ namespace App1.Business
         { 
             PartnerCollections,
             SchemaVersionPattern
+        }
+
+        public static class Chester
+        {
+            public static Dictionary<string, string> UserPartitions = new Dictionary<string, string>()
+            {
+                { "61c058e5559668e69ad62a8d", "test12@example.com" },
+                { "61c066a7559668e69ad78346", "test34@example.com" },
+                { "61c084f8f89724893240b892", "test56@example.com" },
+                { "61c08508c0a82d01340e0458", "test78@example.com" }
+            };
+          
+            public static string DefaultPartition = UserPartitions.Keys.ElementAt(0);
+
+            public static Dictionary<string, int> DataVersionsMap_Partner = new Dictionary<string, int>()
+            {
+                { "61c058e5559668e69ad62a8d", 1 },
+                { "61c066a7559668e69ad78346", 1 },
+                { "61c084f8f89724893240b892", 1 },
+                { "61c08508c0a82d01340e0458", 1 }
+            };
+
+            public static Dictionary<string, int> DataVersionsMap_SchemaV = new Dictionary<string, int>()
+            {
+                { "61c058e5559668e69ad62a8d", 1 },
+                { "61c066a7559668e69ad78346", 2 },
+                { "61c084f8f89724893240b892", 3 },
+                { "61c08508c0a82d01340e0458", 1 }
+            };
+        }
+
+        public static class Alex 
+        {
+            public static Dictionary<string, string> UserPartitions = new Dictionary<string, string>()
+            {
+                { "621ca20d5c1af503ba9f2577", "test12@example.com" },
+                { "[choose first pls ^]", "xxx@example.com" },
+                { "[not an user]", "uuu@example.com" },
+                { "[pls no choose]", "uuy@example.com" }
+            };
+            public static string DefaultPartition = UserPartitions.Keys.ElementAt(0);
+
+            public static Dictionary<string, int> DataVersionsMap_Partner = new Dictionary<string, int>()
+            {
+                { "621ca20d5c1af503ba9f2577", 1 }
+            };
+
+            public static Dictionary<string, int> DataVersionsMap_SchemaV = new Dictionary<string, int>()
+            {
+                { "621ca20d5c1af503ba9f2577", 1 }
+            };
         }
     }
 }
