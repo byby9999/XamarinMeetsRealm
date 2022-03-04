@@ -137,7 +137,7 @@ namespace App1.Views
             }
             finally
             {
-                Title.Text = $"{AppUserPartition}";
+                MyTitle.Text = $"{AppUserPartition}";
 
                 Subtitle.Text = $"Data version: {CurrentDataVersion}";
 
