@@ -150,6 +150,11 @@ namespace App1.Views
                 {
                     UpdateVersion.IsVisible = false;
                 }
+
+                //var envValue = await RealmApp.CurrentUser.Functions.CallAsync("getEnvironmentValue");
+                var normalValue = await RealmApp.CurrentUser.Functions.CallAsync("getNormalValue");
+
+                Subtitle.Text += $" ({normalValue})";
             }
         }
 
