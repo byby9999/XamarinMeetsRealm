@@ -7,84 +7,56 @@ namespace App1.Models
 {
     public static class DisplayModels
     {
-        public static List<Surgery> GetFrom(IEnumerable<Surgery> list)
+        public static List<SurgeryDisplay> GetFrom(IEnumerable<GenesisDbModels.Surgery> list)
         {
-            List<Surgery> result = new List<Surgery>();
+            List<SurgeryDisplay> result = new List<SurgeryDisplay>();
             foreach (var s in list)
             {
-                var displayItem = new Surgery
+                var displayItem = new SurgeryDisplay
                 {
-                    Id = s.Id,
-                    Surgeon = new Surgery_Surgeon
-                    {
-                        FirstName = s.Surgeon.FirstName,
-                        LastName = s.Surgeon.LastName,
-                        Title = s.Surgeon.Title,
-                        Code = s.Surgeon.Code
-                    },
-                    Procedure = new Surgery_Procedure(s.Procedure.Code, s.Procedure.Name)
+                    Id = s.Id.ToString(),
+                    SurgeonFullName = $"{s.Surgeon.Title} {s.Surgeon.Forename} {s.Surgeon.Surname}",
+                    ProcedureName = s.Procedure.Name
                 };
-                displayItem.Extra = s.V.HasValue ? s.V.Value.ToString() : "1";
-
+                
                 result.Add(displayItem);
             }
 
             return result;
         }
 
-        public static List<Surgery> GetFrom(IEnumerable<Surgery_v2> list)
-        {
-            return list.Select(s =>
-                new Surgery
-                {
-                    Id = s.Id,
-                    Surgeon = new Surgery_Surgeon
-                    {
-                        FirstName = s.Surgeon.FirstName,
-                        LastName = s.Surgeon.LastName,
-                        Title = s.Surgeon.Title,
-                        Code = s.Surgeon.Code
-                    },
-                    Procedure = new Surgery_Procedure(s.Procedure.Code, s.Procedure.Name),
-                    Extra = s.V.HasValue ? s.V.Value.ToString() : "2"
-                }).ToList();
-        }
+        //public static List<SurgeryDisplay> GetFrom(IEnumerable<Surgery_v2> list)
+        //{
+        //    return list.Select(s =>
+        //        new SurgeryDisplay
+        //        {
+        //            Id = s.Id.ToString(),
+        //            SurgeonFullName = $"{s.Surgeon.Title} {s.Surgeon.FirstName} {s.Surgeon.LastName}",
+        //            ProcedureName = s.Procedure.Name
+        //        }).ToList();
+        //}
 
-        public static List<Surgery> GetFrom(IEnumerable<Surgery_v3> list)
-        {
-            return list.Select(s =>
-                new Surgery
-                {
-                    Id = s.Id,
-                    Surgeon = new Surgery_Surgeon
-                    {
-                        FirstName = s.Surgeon.FirstName,
-                        LastName = s.Surgeon.LastName,
-                        Title = s.Surgeon.Title,
-                        Code = s.Surgeon.Code
-                    },
-                    Procedure = new Surgery_Procedure(s.Procedure.Code, s.Procedure.Name),
-                    Extra = s.V.HasValue ? s.V.Value.ToString() : "3"
-                }).ToList();
-        }
+        //public static List<SurgeryDisplay> GetFrom(IEnumerable<Surgery_v3> list)
+        //{
+        //    return list.Select(s =>
+        //        new SurgeryDisplay
+        //        {
+        //            Id = s.Id.ToString(),
+        //            SurgeonFullName = $"{s.Surgeon.Title} {s.Surgeon.FirstName} {s.Surgeon.LastName}",
+        //            ProcedureName = s.Procedure.Name
+        //        }).ToList();
+        //}
 
-        public static List<Surgery> GetFrom(IEnumerable<SurgeryGlobal> list)
-        {
-            return list.Select(s =>
-                new Surgery
-                {
-                    Id = s.Id,
-                    Surgeon = new Surgery_Surgeon
-                    {
-                        FirstName = s.Surgeon.FirstName,
-                        LastName = s.Surgeon.LastName,
-                        Title = s.Surgeon.Title,
-                        Code = s.Surgeon.Code
-                    },
-                    Procedure = new Surgery_Procedure(s.Procedure.Code, s.Procedure.Name),
-                    Extra = s.V.HasValue ? s.V.Value.ToString() : "G"
-                }).ToList();
-        }
+        //public static List<SurgeryDisplay> GetFrom(IEnumerable<SurgeryGlobal> list)
+        //{
+        //    return list.Select(s =>
+        //        new SurgeryDisplay
+        //        {
+        //            Id = s.Id.ToString(),
+        //            SurgeonFullName = $"{s.Surgeon.Title} {s.Surgeon.FirstName} {s.Surgeon.LastName}",
+        //            ProcedureName = s.Procedure.Name
+        //        }).ToList();
+        //}
     }
 
 
