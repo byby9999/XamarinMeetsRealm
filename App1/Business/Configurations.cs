@@ -15,5 +15,8 @@ namespace App1.Business
         /// This way, we can ensure clients only update to latest versions available.
         public const int MaxVersionToUpgrade = 3;
 
+        public const string CognitoUserPoolId = "";
+        public const string CognitoAppClientId = "";
+        public const string CognitoAppClientSecret = "";
     }
 }

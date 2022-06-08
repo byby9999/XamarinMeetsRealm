@@ -14,9 +14,8 @@
                     <DataTemplate>
                         <ViewCell>
                             <StackLayout Orientation="Horizontal">
-                                <Label Text="{Binding Procedure.Name, Mode=TwoWay}" WidthRequest="300" Style="{DynamicResource ListItemTextStyle}" />
-                                <Label Text="{Binding SurgeonFullName}"  WidthRequest="100" TextColor="Blue"></Label>
-                                <Label WidthRequest="20" Text="{Binding Extra}" TextColor="LimeGreen" FontSize="Small"></Label>
+                                <Label Text="{Binding Id, Mode=TwoWay}" WidthRequest="300" Style="{DynamicResource ListItemTextStyle}" />
+                                <Label Text="{Binding TenantId}"  WidthRequest="100" TextColor="Blue"></Label>
                                 
                                 <ImageButton x:Name="updateButton" BackgroundColor="Transparent" Source="edit.png" 
                                     CommandParameter="{Binding Id}" Clicked="editButton_Clicked" WidthRequest="40"/>
@@ -28,9 +27,7 @@
                 </ListView.ItemTemplate>
             </ListView>
             <Label x:Name="TotalEntries" FontSize="Small" TextColor="Coral"></Label>
-            <Button x:Name="addButton" Text="+ Surgery" BackgroundColor="#3DD49B" HorizontalOptions="Center" TextColor="White" Clicked="addButton_Clicked"></Button>
-            <Button x:Name="UpdateVersion" IsVisible="False" Text="Update to V 3" HorizontalOptions="Center"
-                    TextColor="White" BackgroundColor="Orange" FontSize="Small" Clicked="updateVersionButton_Clicked"></Button> 
+            <Button x:Name="addButton" Text="+" BackgroundColor="#3DD49B" HorizontalOptions="Center" TextColor="White" Clicked="addButton_Clicked"></Button>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>
