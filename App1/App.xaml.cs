@@ -19,7 +19,7 @@ namespace App1
 
         public static Realm medicalRealm;
 
-        public static string AppUserPartition = Chester.DefaultPartition;
+        public static string AppUserPartition = ""; 
 
         public static int CurrentDataVersion = 1;
         public static int TopX = 20;

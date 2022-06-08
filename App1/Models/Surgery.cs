@@ -28,7 +28,7 @@ namespace App1.Models
     //    [MapTo("_partition")]
     //    [Required]
     //    public string Partition { get; set; }
-    
+
 
     //    [MapTo("v")]
     //    public int? V { get; set; }
@@ -78,7 +78,7 @@ namespace App1.Models
     //{
     //    public string Code { get; set; }
     //    public string Name { get; set; }
-    
+
     //    public Surgery_Procedure()
     //    {
 
@@ -137,4 +137,36 @@ namespace App1.Models
     //    public string Code { get; set; }
     //    public string Description { get; set; }
     //}
+    public class Surgery : RealmObject
+    {
+        [PrimaryKey]
+        [MapTo("_id")]
+        public ObjectId? Id { get; set; }
+        public string EndTime { get; set; }
+        public string GRSN { get; set; }
+        public string Notes { get; set; }
+        public string PatientId { get; set; }
+        public Surgery_Procedure Procedure { get; set; }
+        public string StartTime { get; set; }
+        public string State { get; set; }
+        public Surgery_Surgeon Surgeon { get; set; }
+        public int? SurgeonId { get; set; }
+        public string SurgeryScheduleId { get; set; }
+        public string SyncState { get; set; }
+        public Surgery_Theatre Theatre { get; set; }
+        [MapTo("_partition")]
+        public string Partition { get; set; }
+    }
+    public class Surgery_Procedure : EmbeddedObject
+    {
+        public string ID { get; set; }
+    }
+    public class Surgery_Surgeon : EmbeddedObject
+    {
+        public string ID { get; set; }
+    }
+    public class Surgery_Theatre : EmbeddedObject
+    {
+        public string ID { get; set; }
+    }
 }

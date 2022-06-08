@@ -5,29 +5,7 @@
     <ContentPage.Content>
         <StackLayout>
             <!-- Place new controls here -->
-            <Label x:Name="LoggedIn" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Title" TextColor="Red" />
-            <Label x:Name="Subtitle" HorizontalOptions="Center" FontSize="Medium" TextColor="RoyalBlue"></Label>
-
-            <ListView x:Name="MySurgeries" ItemsSource="{Binding Items}" CachingStrategy="RecycleElement">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell>
-                            <StackLayout Orientation="Horizontal">
-                                <Label Text="{Binding Procedure.Name, Mode=TwoWay}" WidthRequest="300" Style="{DynamicResource ListItemTextStyle}" />
-                                <Label Text="{Binding SurgeonFullName}"  WidthRequest="100" TextColor="Blue"></Label>
-                                <Label WidthRequest="20" Text="{Binding Extra}" TextColor="LimeGreen" FontSize="Small"></Label>
-                                
-                                <ImageButton x:Name="updateButton" BackgroundColor="Transparent" Source="edit.png" 
-                                    CommandParameter="{Binding Id}" Clicked="editButton_Clicked" WidthRequest="40"/>
-                                <ImageButton x:Name="removeButton" BackgroundColor="Transparent" Source="delete.png"
-                                    CommandParameter="{Binding Id}" Clicked="removeButton_Clicked" WidthRequest="40"/>
-                            </StackLayout>
-                        </ViewCell>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-            <Button x:Name="addButton" Text="+ surgery" BackgroundColor="#3DD49B" HorizontalOptions="Center" TextColor="White" Clicked="addButton_Clicked"></Button>
-            <Label x:Name="Stats" FontSize="Small" TextColor="Coral"></Label>
+           <Label Text="Here we are"></Label>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>
