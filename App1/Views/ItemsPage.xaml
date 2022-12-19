@@ -17,7 +17,7 @@
     <ContentPage.Content>
         <StackLayout>
             <!-- Place new controls here -->
-            <Label x:Name="MyTitle" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Title" TextColor="Black" Text="A - Partner collections B - Schema versioning pattern." />
+            <Label x:Name="MyTitle" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Title" TextColor="Black" Text="Flexible sync, partner collections PoC" />
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

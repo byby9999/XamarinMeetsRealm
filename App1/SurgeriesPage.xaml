@@ -5,29 +5,14 @@
     <ContentPage.Content>
         <StackLayout>
             <!-- Place new controls here -->
-            <Label x:Name="MyTitle" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Title" TextColor="DeepPink" />
-            <Label x:Name="Subtitle" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Small" TextColor="CornflowerBlue" />
-            <ListView x:Name="MySurgeries"
-            ItemsSource="{Binding Items}" 
-            CachingStrategy="RecycleElement">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell>
-                            <StackLayout Orientation="Horizontal">
-                                <Label Text="{Binding Id, Mode=TwoWay}" WidthRequest="300" Style="{DynamicResource ListItemTextStyle}" />
-                                <Label Text="{Binding TenantId}"  WidthRequest="100" TextColor="Blue"></Label>
-                                
-                                <ImageButton x:Name="updateButton" BackgroundColor="Transparent" Source="edit.png" 
-                                    CommandParameter="{Binding Id}" Clicked="editButton_Clicked" WidthRequest="40"/>
-                                <ImageButton x:Name="removeButton" BackgroundColor="Transparent" Source="delete.png"
-                                    CommandParameter="{Binding Id}" Clicked="removeButton_Clicked" WidthRequest="40"/>
-                            </StackLayout>
-                        </ViewCell>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-            <Label x:Name="TotalEntries" FontSize="Small" TextColor="Coral"></Label>
-            <Button x:Name="addButton" Text="+" BackgroundColor="#3DD49B" HorizontalOptions="Center" TextColor="White" Clicked="addButton_Clicked"></Button>
+            <Label x:Name="MyTitle" HorizontalOptions="Center" VerticalOptions="CenterAndExpand" FontSize="Title" 
+                   TextColor="DeepPink" Text="Flexible sync - Partner Collections Demo"/>
+            
+            <Label x:Name="TotalEntries" FontSize="Medium" TextColor="Black"></Label>
+           
+            <Button x:Name="add" Text="add" BackgroundColor="MediumSeaGreen" TextColor="White" Clicked="add_Clicked"></Button>
+            <Button x:Name="del" Text="del" BackgroundColor="Red" TextColor="White" Clicked="del_Clicked"></Button>
+            <Button x:Name="edt" Text="edt" BackgroundColor="Orange" TextColor="White" Clicked="edt_Clicked"></Button>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

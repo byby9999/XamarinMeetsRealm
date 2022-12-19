@@ -1,21 +1,14 @@
 ﻿using App1.Models;
-using MongoDB.Bson;
 using Realms;
 using Realms.Sync;
 using System;
-using System.Collections.ObjectModel;
 using System.Linq;
-
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-
-using App1.Business;
-using static App1.Business.Configurations;
-using Amazon.CognitoIdentityProvider;
-using Amazon.Extensions.CognitoAuthentication;
-using Amazon.Runtime;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using Amazon;
+using System.Threading.Tasks;
+using App1.Business;
 
 namespace App1.Views 
 {
@@ -24,157 +17,268 @@ namespace App1.Views
     {
         public static Realms.Sync.App RealmApp;
 
-        private static Realm medicalRealm;
-        SyncConfiguration syncConfigMedical;
+        private static Realm Realm;
 
-        public static string AppUserPartition = string.Empty;
+        public static int CurrentVersion = 1;
+        public const int NextVersion = 2;
+        public const string IMPLANT = "B148C594-2613-425F-9A8B-434F9AD99C55";
+        public const string CONSUMABLE = "35149BF6-6351-4F2F-AD64-64D00CAD1481";
 
-        public static int CurrentDataVersion = 1;
-        public static int TopX = 10;
+        public const string TENANT = "PARTNERCOLLECTIONS";
+        public const string APPID = "genesis-partnercollections-svgjj";
 
-        public static string RealmAppId { get; set; }
+        public static string CurrentUser = "test@partner.co";
 
-        public static Dictionary<string, int> DataVersionsMap = new Dictionary<string, int>() { { "user1@test.com", 1}, { "user2@test.com ", 1} };
-
-        public ObservableCollection<Surgery> Items { get; set; }
+        public static Dictionary<string, int> UsersVersionsMap = new Dictionary<string, int>() 
+        { 
+            { "test@partner.co", 1 }, 
+            { "test2@partner.co", 2 }
+        };
 
         public SurgeriesPage()
         {
             InitializeComponent();
             
-            Items = new ObservableCollection<Surgery>();
-            MySurgeries.ItemsSource = Items;
-            
+            var loggingConfig = AWSConfigs.LoggingConfig;
+            loggingConfig.LogMetrics = true;
+            loggingConfig.LogResponses = ResponseLoggingOption.Always;
+            loggingConfig.LogMetricsFormat = LogMetricsFormatOption.JSON;
+            loggingConfig.LogTo = LoggingOptions.SystemDiagnostics;
+            AWSConfigs.AWSRegion = "eu-west-1";
         }
         
         protected override async void OnAppearing()
         {
             try
             {
-                RealmApp = Realms.Sync.App.Create("application-alex-xaruv");
+                string user = await DisplayPromptAsync(
+                    title: "User", 
+                    message: "choose test@partner.co for v1, test2@partner.co for v2", 
+                    accept: "Login", 
+                    initialValue: CurrentUser);
 
-                var userPoolId = Configurations.CognitoUserPoolId;
-                var appClientId = Configurations.CognitoAppClientId;
-                var appClientSecret = Configurations.CognitoAppClientSecret;
+                CurrentUser = user;
 
-                var username = "madalin.stefirca@maxcode.net";
-                var password = "Abc 123!";
+                if (RealmApp == null) 
+                {
+                    RealmApp = Realms.Sync.App.Create(APPID);
+                }
+                CurrentVersion = UsersVersionsMap[CurrentUser];
 
-                var provider = new AmazonCognitoIdentityProviderClient(
-                          new AnonymousAWSCredentials(), Amazon.RegionEndpoint.EUWest1);
-                var userPool = new CognitoUserPool(userPoolId, appClientId, provider);
-                var user = new CognitoUser(username, appClientId, userPool, provider, appClientSecret);
-                var authRequest = new InitiateSrpAuthRequest() { Password = password };
+                var countAll = await CountObjects(CurrentUser, CurrentVersion);
 
-                var authResponse = await user.StartWithSrpAuthAsync(authRequest).ConfigureAwait(false);
-
-                var token = authResponse.AuthenticationResult.IdToken;
-
-                 var realmUser = await RealmApp.LogInAsync(Credentials.JWT(token));
-
-                AppUserPartition = "1";
-
-                syncConfigMedical = new SyncConfiguration(AppUserPartition, RealmApp.CurrentUser);
-
-                await PopulateItemsList();
+                UpdateAppTexts(CurrentUser, CurrentVersion, countAll);
             }
-            catch (Realms.Exceptions.RealmException realmEx) 
-            {
-                await DisplayAlert(realmEx.GetBaseException().GetType().ToString(), 
-                    realmEx.GetBaseException().Message, "ok");
 
+            catch (Realms.Exceptions.RealmException realmEx)
+            {
+                await DisplayAlert(realmEx.GetBaseException().GetType().ToString(), realmEx.GetBaseException().Message, "ok");
                 return;
             }
         }
 
-        private async Task PopulateItemsList()
+        private async Task<(int, int, int, int)> CountObjects(string userpass, int dataVersion = 1)
         {
-            try
+            try 
             {
-                medicalRealm = await Realm.GetInstanceAsync(syncConfigMedical);
-
-                var items = medicalRealm.All<Surgery>().ToList();
-                var count = items.Count();
-
-                var firstX = items.Take(10).ToList();
-                   
-                //Items = new ObservableCollection<Surgery>(firstX);
-               
-                Device.BeginInvokeOnMainThread(() =>
+                var user = await RealmApp.LogInAsync(Credentials.EmailPassword(userpass, userpass));
+                var config = new FlexibleSyncConfiguration(user);
+                
+                if (Realm != null) 
+                { 
+                    Realm.Dispose(); 
+                }
+                Realm = Realm.GetInstance(config);
+                
+                int countSurgeries = 0, countConsumables = 0, countItemBarcode = 0;
+                int countImplantBarcode = 0, countConsumableBarcode = 0;
+                Realm.Subscriptions.Update(() =>
                 {
-                    TotalEntries.Text = $"Showing top {TopX} / {count} entries";
+                    Realm.Subscriptions.RemoveAll();
+
+                    var surgeriesQuery = Realm.All<Surgery>().Where(s => s.Partition == TENANT);
+                    var consumablesQuery = Realm.All<Consumable>().Where(s => s.Partition == TENANT);
+
+                    Realm.Subscriptions.Add(surgeriesQuery);
+                    Realm.Subscriptions.Add(consumablesQuery);
+
+                    switch (dataVersion)
+                    {
+                        case 1:
+                            var itemBarcodeQuery = Realm.All<ItemBarcode>().Where(i => i.Partition == TENANT);
+
+                            Realm.Subscriptions.Add(itemBarcodeQuery);
+                            break;
+
+                        case 2:
+                            var implantsBarcodeQuery = Realm.All<ImplantBarcode>().Where(i => i.Partition == TENANT);
+                            var consumablesBarcodeQuery = Realm.All<ConsumableBarcode>().Where(c => c.Partition == TENANT);
+
+                            Realm.Subscriptions.Add(implantsBarcodeQuery);
+                            Realm.Subscriptions.Add(consumablesBarcodeQuery);
+                            break;
+                    }
                 });
 
+                await Realm.Subscriptions.WaitForSynchronizationAsync();
+
+                countSurgeries = Realm.All<Surgery>().Count();
+                countConsumables = Realm.All<Consumable>().Count();
+
+                switch (dataVersion)
+                {
+                    case 1:
+                        countItemBarcode = Realm.All<ItemBarcode>().Count();
+                        return (countSurgeries, countConsumables, countItemBarcode, 0);
+                    case 2:
+                        countImplantBarcode = Realm.All<ImplantBarcode>().Count();
+                        countConsumableBarcode = Realm.All<ConsumableBarcode>().Count();
+                        return (countSurgeries, countConsumables, countImplantBarcode, countConsumableBarcode);
+                    default:
+                        return (countSurgeries, countConsumables, countItemBarcode, 0);
+                }
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Error", ex.Message, "ok");
+                TotalEntries.Text = ex.Message;
+                if (RealmApp.CurrentUser != null)
+                {
+                    await RealmApp.CurrentUser.LogOutAsync();
+                }
+                if (Realm != null)
+                {
+                    Realm.Dispose();
+                }
+                throw ex;
             }
-            
-        }
-
-
-        private async void removeButton_Clicked(object sender, EventArgs e)
-        {
-            var confirm = await DisplayAlert("Are you sure?", "You are about to delete the object. Are you sure?", "Yes", "No");
-            if (!confirm)
-                return;
-
-            var button = (ImageButton)sender;
-            var entityId = button.CommandParameter.ToString();
-            var objectId = new ObjectId(entityId);
-
-            var toRemoveFromListView = Items.FirstOrDefault(i => !string.IsNullOrEmpty(i.Id.ToString()) && i.Id.Equals(objectId));
-            if (toRemoveFromListView != null)
-            {
-                Items.Remove(toRemoveFromListView);
-                MySurgeries.ItemsSource = Items;
-            }
-
-            medicalRealm.RemoveSurgery(objectId);
-            
-        }
-        private async void editButton_Clicked(object sender, EventArgs e)
-        {
-            var button = (ImageButton)sender;
-            var entityId = button.CommandParameter.ToString();
-            var objectId = new ObjectId(entityId);
-            string newName = await DisplayPromptAsync("Edit Surgery", "New Procedure Name:", initialValue: "edit_");
-
-            medicalRealm.EditSurgery(objectId, newName, CurrentDataVersion);
-
-            var listViewItem = Items.FirstOrDefault(i => i.Id.Equals(objectId));
-            if (listViewItem != null && !listViewItem.Procedure.ID.Equals(newName))
-            {
-                listViewItem.Procedure.ID = newName;
-                MySurgeries.ItemsSource = Items;
-            }
-        }
-
-        private async void addButton_Clicked(object sender, EventArgs e)
-        {
-        }
-
-        private async void updateVersionButton_Clicked(object sender, EventArgs e) 
-        {
-            CurrentDataVersion = MaxVersionToUpgrade;
-
-            DataVersionsMap[RealmApp.CurrentUser.Profile.Email] = MaxVersionToUpgrade;
-
-            await PopulateItemsList();
         }
 
         protected override async void OnDisappearing()
         {
-            if (medicalRealm != null)
-                medicalRealm.Dispose();
-            
-            await RealmApp.CurrentUser.LogOutAsync();
-            RealmApp = null;
+            if (RealmApp.CurrentUser != null) 
+            {
+                await RealmApp.CurrentUser.LogOutAsync();
+            }
+            if (Realm != null) 
+            {
+                Realm.Dispose();
+            }
+        }
 
-            AppUserPartition = string.Empty;
+        private void UpdateAppTexts(string user, int dataVersion, (int, int, int, int) count)
+        {
+            var username = user.Split('@')[0];
 
-            MySurgeries.ItemsSource = null;
+            MyTitle.Text = $"{username}@{TENANT} (v {dataVersion})";
+            TotalEntries.Text = $"{count.Item1} Surgeries\n{count.Item2} Consumables";
+            if (dataVersion == 1)
+            {
+                TotalEntries.Text += $"\n{count.Item3} ItemBarcodes";
+                add.Text = "add 1 item barcode";
+                edt.Text = "edit 1 item barcode";
+                del.Text = "delete 1 item barcode";
+            }
+            else
+            {
+                TotalEntries.Text += $"\n{count.Item3} ImplantBarcodes\n{count.Item4} ConsumableBarcodes";
+                add.Text = "add 1 implant/consumable barcode";
+                edt.Text = "edit 1 implant/consumable barcode";
+                del.Text = "delete 1 implant/consumable barcode";
+            }
+        }
+
+        private async void add_Clicked(object sender, EventArgs e)
+        {
+            string type = await DisplayActionSheet("Choose Item Type", "Cancel", null, "implant", "consumable");
+                
+            Realm.Write(() =>
+            {
+                if (type == "implant")
+                {
+                    if (CurrentVersion == 1)
+                    {
+                        Realm.Add(ObjectGenerator.NewItemBarcode(IMPLANT));
+                    }
+                    else
+                    {
+                        Realm.Add(ObjectGenerator.NewImplantBarcode());
+                    }
+                }
+                if (type == "consumable") 
+                {
+                    if (CurrentVersion == 1)
+                    {
+                        Realm.Add(ObjectGenerator.NewItemBarcode(CONSUMABLE));
+                    }
+                    else
+                    {
+                        Realm.Add(ObjectGenerator.NewConsumableBarcode());
+                    }
+                }
+            });
+            var countAfterInserts = await CountObjects(CurrentUser, CurrentVersion);
+
+            UpdateAppTexts(CurrentUser, CurrentVersion, countAfterInserts);
+        }
+
+
+        private async void del_Clicked(object sender, EventArgs e)
+        {
+            if (CurrentVersion == 1)
+            {
+                var itemBarcode = Realm.All<ItemBarcode>().OrderByDescending(i => i.CreatedOn).First();
+
+                Realm.Write(() =>
+                {
+                    itemBarcode.IsActive = false;
+                });
+            }
+            else
+            {
+                var implantBarcode = Realm.All<ImplantBarcode>().OrderByDescending(i => i.CreatedOn).First();
+                var consumableBarcode = Realm.All<ConsumableBarcode>().OrderByDescending(i => i.CreatedOn).First();
+
+                Realm.Write(() =>
+                {
+                    implantBarcode.IsActive = false;
+                    consumableBarcode.IsActive = false;
+                });
+            }
+
+            var countAfterDelete = await CountObjects(CurrentUser, CurrentVersion);
+
+            UpdateAppTexts(CurrentUser, CurrentVersion, countAfterDelete);
+        }
+
+        private void edt_Clicked(object sender, EventArgs e)
+        {
+            if (CurrentVersion == 1)
+            {
+                var itemBarcode = Realm.All<ItemBarcode>().OrderByDescending(i => i.CreatedOn).First();
+
+                Realm.Write(() =>
+                {
+                    itemBarcode.UpdatedOn = DateTime.Now;
+                    itemBarcode.UpdatedBy = "alex_poc";
+                    itemBarcode.DeviceIdentifier = "update_" + itemBarcode.DeviceIdentifier;
+                });
+            }
+            else
+            {
+                var implantBarcode = Realm.All<ImplantBarcode>().OrderByDescending(i => i.CreatedOn).First();
+                var consumableBarcode = Realm.All<ConsumableBarcode>().OrderByDescending(i => i.CreatedOn).First();
+
+                Realm.Write(() =>
+                {
+                    implantBarcode.UpdatedOn = DateTime.Now;
+                    implantBarcode.UpdatedBy = "alex_poc";
+                    implantBarcode.DeviceIdentifier = "update_" + implantBarcode.DeviceIdentifier;
+
+                    consumableBarcode.UpdatedOn = DateTime.Now;
+                    consumableBarcode.UpdatedBy = "alex_poc";
+                    consumableBarcode.DeviceIdentifier = "update_" + consumableBarcode.DeviceIdentifier;
+                });
+            }
         }
     }
 }

@@ -26,7 +26,6 @@ namespace App1
 
         //public static string RealmAppId = Configurations.ChesterAccount_ChesterOrg_Project0_MyApp;
 
-        public ObservableCollection<Surgery> Items { get; set; }
 
         public App()
         {
